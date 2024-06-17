@@ -29,36 +29,22 @@ MTYPE input_right_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA
 MTYPE output_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
 MTYPE ref_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
 
-ErvpMatrixInfo input_left_info;
-ErvpMatrixInfo input_right_info;
-ErvpMatrixInfo output_info;
-ErvpMatrixInfo ref_info;
-
-// MUST update this function according to your hardware
-void test_matrix_mult(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, ErvpMatrixInfo* c)
-{
-  matrix_mult_sw(a, b, c);
-}
+ErvpMatrixInfo* input_left_info = NULL;
+ErvpMatrixInfo* input_right_info = NULL;
+ErvpMatrixInfo* output_info = NULL;
 
 void matrix_info_init()
 {
-  input_left_info.datatype = MATRIX_DATATYPE;
-	input_left_info.num_row = TEST_MATRIX_SIZE;
-	input_left_info.num_col = TEST_MATRIX_SIZE;
-	input_left_info.stride = sizeof(MTYPE)*TEST_MATRIX_SIZE;
-
-  input_right_info = input_left_info;
-  input_right_info.datatype = MATRIX_DATATYPE_BOOL;
-  output_info = input_left_info;
-  ref_info = input_left_info;
+  input_left_info = matrix_generate_info(MATRIX_DATATYPE,TEST_MATRIX_SIZE,TEST_MATRIX_SIZE,NULL,NULL);
+  input_right_info = matrix_generate_info(MATRIX_DATATYPE,TEST_MATRIX_SIZE,TEST_MATRIX_SIZE,NULL,NULL);
+  output_info = matrix_generate_info(MATRIX_DATATYPE,TEST_MATRIX_SIZE,TEST_MATRIX_SIZE,NULL,NULL);
 }
 
 void matrix_info_setup(int index)
 {
-  input_left_info.addr = (void*)(input_left_array[index]);
-  input_right_info.addr = (void*)(input_right_array[index]);
-  output_info.addr = (void*)(output_array[index]);
-  ref_info.addr = (void*)(ref_array[index]);
+  input_left_info->addr = (void*)(input_left_array[index]);
+  input_right_info->addr = (void*)(input_right_array[index]);
+  output_info->addr = (void*)(output_array[index]);
 }
 
 int main()
@@ -69,37 +55,37 @@ int main()
   {
     // init matrices
     matrix_info_setup(i);
-    generate_test_matrix(&input_left_info, i);
+    generate_test_matrix(input_left_info, i);
     // add
-    matrix_zero(&input_right_info);
-    matrix_zero(&output_info);
-    matrix_add(&input_left_info, &input_right_info, &output_info);
+    matrix_zero(input_right_info);
+    matrix_zero(output_info);
+    matrix_add(input_left_info, input_right_info, output_info);
     if(RESULT_CHECK)
-      matrix_compare(&output_info, &input_left_info, 1);
+      matrix_compare(output_info, input_left_info, 1);
     // sub
-    matrix_zero(&input_right_info);
-    matrix_zero(&output_info);
-    matrix_sub(&input_left_info, &input_right_info, &output_info);
+    matrix_zero(input_right_info);
+    matrix_zero(output_info);
+    matrix_sub(input_left_info, input_right_info, output_info);
     if(RESULT_CHECK)
-      matrix_compare(&output_info, &input_left_info, 1);
+      matrix_compare(output_info, input_left_info, 1);
     // ewmult
-    matrix_one(&input_right_info);
-    matrix_zero(&output_info);
-    matrix_ewmult(&input_left_info, &input_right_info, &output_info);
+    matrix_one(input_right_info);
+    matrix_zero(output_info);
+    matrix_ewmult(input_left_info, input_right_info, output_info);
     if(RESULT_CHECK)
-      matrix_compare(&output_info, &input_left_info, 1);
+      matrix_compare(output_info, input_left_info, 1);
     // scalar mult
-    matrix_one(&input_right_info);
-    matrix_zero(&output_info);
-    matrix_scalar_mult_fixed(&input_left_info, 1, &output_info);
+    matrix_one(input_right_info);
+    matrix_zero(output_info);
+    matrix_scalar_mult_fixed(input_left_info, 1, output_info);
     if(RESULT_CHECK)
-      matrix_compare(&output_info, &input_left_info, 1);
+      matrix_compare(output_info, input_left_info, 1);
     // mult
-    matrix_identity(&input_right_info);
-    matrix_zero(&output_info);
-    matrix_mult(&input_left_info, &input_right_info, &output_info);
+    matrix_identity(input_right_info);
+    matrix_zero(output_info);
+    matrix_mult(input_left_info, input_right_info, output_info);
     if(RESULT_CHECK)
-      matrix_compare(&output_info, &input_left_info, 1);
+      matrix_compare(output_info, input_left_info, 1);
   }
 	return 0;
 }

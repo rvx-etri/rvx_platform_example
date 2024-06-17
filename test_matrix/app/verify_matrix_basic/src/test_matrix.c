@@ -231,49 +231,6 @@ void generate_test_matrix(ErvpMatrixInfo* matrix_info, int index)
         }
       }
       break;
-    case MATRIX_DATATYPE_UINT32:
-      {
-        unsigned int* row_addr = (unsigned int*)matrix_info->addr;
-        index2 = (index==(-1))? -1 : (index%5);
-        for(j=0; j<matrix_info->num_row; j++)
-        {
-          for(i=0; i<matrix_info->num_col; i++)
-          {
-            switch(index2)
-            {
-              case 0:
-                row_addr[i] = j*matrix_info->num_col + i + 1 - 4;
-                break;
-              case 1:
-                row_addr[i] = j*matrix_info->num_col + i + 8;
-                break;
-              case 2:
-                row_addr[i] = i*matrix_info->num_col + j - 6;
-                break;
-              case 3:
-                row_addr[i] = ((j*matrix_info->num_col + i + 1)>>3) - 8;
-                break;
-              case 4:
-                row_addr[i] = ((j*matrix_info->num_col + i + 1)&7) - 4;
-                break;
-              case -1:
-                row_addr[i] = 0;
-                break;
-              default:
-                while(1);
-            }
-            if(invert==2)
-            {
-              row_addr[i] = -row_addr[i];
-              invert = 0;
-            }
-            else
-              invert++;
-          }
-          row_addr = (unsigned int*)(((unsigned int)row_addr) + matrix_info->stride);
-        }
-      }
-      break;
     case MATRIX_DATATYPE_FLOAT32:
       {
         float* row_addr = (float*)matrix_info->addr;
