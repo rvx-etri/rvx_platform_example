@@ -1,0 +1,7 @@
+verify:
+	@for x in ${wildcard ./* }; do \
+    if [ -d $$x ]; then \
+  		echo $$x; \
+      cd $$x && make test; \
+    fi; \
+	done
