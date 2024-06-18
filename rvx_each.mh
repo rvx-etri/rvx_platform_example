@@ -1,7 +1,6 @@
 verify:
-	@for x in ${wildcard ./* }; do \
+	@for x in ${wildcard ${CURDIR}/* }; do \
     if [ -d $$x ]; then \
-  		echo $$x; \
       cd $$x && make test; \
     fi; \
 	done
