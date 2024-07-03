@@ -1,0 +1,7 @@
+verify:
+	@for x in ${wildcard ${CURDIR}/* }; do \
+    if [ -d $$x ]; then \
+      cd $$x && make test; \
+      test -e $$x/sim_rtl/compile_correctly || exit 1; \
+    fi; \
+	done
