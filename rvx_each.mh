@@ -1,6 +1,0 @@
-verify:
-	@for x in ${wildcard ${CURDIR}/* }; do \
-    if [ -d $$x ]; then \
-      cd $$x && make test; \
-    fi; \
-	done

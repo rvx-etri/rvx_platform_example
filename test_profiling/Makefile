@@ -54,7 +54,7 @@ endif
 
 ENGINE_WS=${PLATFORM_DIR}/..
 ENGINE_TARGET=platform
-ENGINE_CMD_LIST=user util testbench app_base system_app clean distclean syn syn_arch sim_vp sim_rtl fpga imp_fpga imp_fpga_dir gui clean_imp app_list fpga_list imp_soc wifi_config aix_config
+ENGINE_CMD_LIST=user util testbench app_base system_app clean distclean syn syn_arch sim_vp sim_rtl sim_rtl_syn fpga imp_fpga imp_fpga_dir gui clean_imp app_list fpga_list imp_soc wifi_config aix_config freeze unfreeze
 ENGINE_PARA= -p ${PLATFORM_NAME}
 
 ifdef TARGET_IMP_CLASS
@@ -86,11 +86,7 @@ FPGA_LIST = $(shell ${PYTHON3_CMD} ${RVX_UTIL_HOME}/os_util.py dir_list ${ENGINE
 ${FPGA_LIST}:
 	@make imp_fpga TARGET_IMP_CLASS=$@
 
-test: clean syn sim_rtl
-	@cd ./sim_rtl && make ${TEST_APP_NAME}
-
-test_fpga: fpga
-	@cd ./imp* && make project
+test: test_rtl_app
 
 .PHONY: imp_fpga sim_vp_cloud
 

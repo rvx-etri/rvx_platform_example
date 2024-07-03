@@ -3,39 +3,39 @@
 #include "ervp_printf.h"
 #include "parser.h"
 
-void parse_net_option_list(list *option_list);
-int is_network(section *s);
-void parse_conv(list *option_list);
-void parse_fc(list *option_list);
-void parse_neuron(list *option_list);
+void parse_net_option_list(texpar_list_t *option_list);
+int is_network(texpar_section_t *s);
+void parse_conv(texpar_list_t *option_list);
+void parse_fc(texpar_list_t *option_list);
+void parse_neuron(texpar_list_t *option_list);
 
 void parse_network_cfg(char *filename)
 {
-  list *section_list = texpar_read_file_with_section(filename);
-  node *n = section_list->front;
+  texpar_list_t *section_list = texpar_read_file_with_section(filename);
+  texpar_node_t *n = section_list->front;
   if(!n) {
     printf("Config file has no section_list");
     return;
   }
   /* net info parsing */
-  section *s = (section *)n->val;
-  list *option_list = s->option_list;
+  texpar_section_t *s = (texpar_section_t *)n->val;
+  texpar_list_t *option_list = s->option_list;
 
   if(!is_network(s)) {
-    printf("First section must be [net] or [network]");
+    printf("First texpar_section_t must be [net] or [network]");
     return;
   }
   parse_net_option_list(option_list);
 
   /* layers info parsing */
-  n = n->next;  // next section node
+  n = n->next;  // next texpar_section_t texpar_node_t
   int count = 0;
   texpar_free_section(s);
   while(n){
-    s = (section *)n->val; // section
-    option_list = s->option_list; // option list
+    s = (texpar_section_t *)n->val; // texpar_section_t
+    option_list = s->option_list; // option texpar_list_t
     printf("\nlayer %2d: %s\n", count, s->type);
-    // option list parsing
+    // option texpar_list_t parsing
     if (strcmp(s->type, "[conv]")==0) {
       parse_conv(option_list);
     }
@@ -51,7 +51,7 @@ void parse_network_cfg(char *filename)
   free_list(section_list);
 }
 
-void parse_net_option_list(list *option_list)
+void parse_net_option_list(texpar_list_t *option_list)
 {
   char *app_name = texpar_find_str(option_list, "app_name", "mnist_l2ff");
   printf("app_name: %s\n", app_name);
@@ -65,13 +65,13 @@ void parse_net_option_list(list *option_list)
   printf("channels: %d\n", channels);
 }
 
-int is_network(section *s)
+int is_network(texpar_section_t *s)
 {
     return (strcmp(s->type, "[net]")==0
             || strcmp(s->type, "[network]")==0);
 }
 
-void parse_conv(list *option_list){
+void parse_conv(texpar_list_t *option_list){
   int input_height = texpar_find_int_quiet(option_list, "input_height", 14);
   printf("input_height: %d\n", input_height);
   int input_width = texpar_find_int_quiet(option_list, "input_width", 14);
@@ -85,7 +85,7 @@ void parse_conv(list *option_list){
   parse_neuron(option_list);
 }
 
-void parse_fc(list *option_list){
+void parse_fc(texpar_list_t *option_list){
   int input = texpar_find_int_quiet(option_list, "input", 200);
   printf("input: %d\n", input);
   int output = texpar_find_int_quiet(option_list, "output", 10);
@@ -93,7 +93,7 @@ void parse_fc(list *option_list){
   parse_neuron(option_list);
 }
 
-void parse_neuron(list *option_list){
+void parse_neuron(texpar_list_t *option_list){
   char *neuron_model = texpar_find_str(option_list, "neuron_model", "lif");
   printf("neuron_model: %s\n", neuron_model);
   float neuron_beta = texpar_find_float_quiet(option_list, "neuron_beta", 1.0f);

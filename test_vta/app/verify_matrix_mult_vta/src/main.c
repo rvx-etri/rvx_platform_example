@@ -1,6 +1,8 @@
 #include "platform_info.h"
 #include "ervp_printf.h"
 #include "ervp_variable_allocation.h"
+#include "ervp_matrix.h"
+
 #include "test_matrix.h"
 
 #define NUN_MATRIX 1
@@ -27,10 +29,10 @@ MTYPE input_right_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA
 MTYPE output_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
 MTYPE ref_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
 
-ErvpMatrixInfo input_left_info;
-ErvpMatrixInfo input_right_info;
-ErvpMatrixInfo output_info;
-ErvpMatrixInfo ref_info;
+ErvpMatrixInfo* input_left_info = NULL;
+ErvpMatrixInfo* input_right_info = NULL;
+ErvpMatrixInfo* output_info = NULL;
+ErvpMatrixInfo* ref_info = NULL;
 
 static inline void test_matrix_mult(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, ErvpMatrixInfo* c)
 {
@@ -41,22 +43,18 @@ static inline void test_matrix_mult(const ErvpMatrixInfo* a, const ErvpMatrixInf
 
 void matrix_info_init()
 {
-  input_left_info.datatype = MATRIX_DATATYPE;
-	input_left_info.num_row = TEST_MATRIX_SIZE;
-	input_left_info.num_col = TEST_MATRIX_SIZE;
-	input_left_info.stride = sizeof(MTYPE)*TEST_MATRIX_SIZE;
-
-  input_right_info = input_left_info;
-  output_info = input_left_info;
-  ref_info = input_left_info;
+  input_left_info = matrix_generate_info(MATRIX_DATATYPE,TEST_MATRIX_SIZE,TEST_MATRIX_SIZE,NULL,NULL);
+  input_right_info = matrix_generate_info(MATRIX_DATATYPE,TEST_MATRIX_SIZE,TEST_MATRIX_SIZE,NULL,NULL);
+  output_info = matrix_generate_info(MATRIX_DATATYPE,TEST_MATRIX_SIZE,TEST_MATRIX_SIZE,NULL,NULL);
+  ref_info = matrix_generate_info(MATRIX_DATATYPE,TEST_MATRIX_SIZE,TEST_MATRIX_SIZE,NULL,NULL);
 }
 
 void matrix_info_setup(int index)
 {
-  input_left_info.addr = (void*)(input_left_array[index]);
-  input_right_info.addr = (void*)(input_right_array[index]);
-  output_info.addr = (void*)(output_array[index]);
-  ref_info.addr = (void*)(ref_array[index]);
+  input_left_info->addr = (void*)(input_left_array[index]);
+  input_right_info->addr = (void*)(input_right_array[index]);
+  output_info->addr = (void*)(output_array[index]);
+  ref_info->addr = (void*)(ref_array[index]);
 }
 
 int main()
@@ -68,7 +66,7 @@ int main()
   for(int i=0; i<NUN_MATRIX; i=i+1)
   {
     matrix_info_setup(i);
-    generate_test_matrix(&input_left_info, i);
+    generate_test_matrix(input_left_info, i);
   }
 
   // init right matrices as identity matrix
@@ -93,9 +91,9 @@ int main()
   {
     matrix_info_setup(i);
     ref_info = input_left_info; // REMOVE if you change the right matrices
-    test_matrix_mult(&input_left_info, &input_right_info, &output_info);
+    test_matrix_mult(input_left_info, input_right_info, output_info);
     if(RESULT_CHECK)
-      matrix_compare(&output_info, &ref_info, 1);
+      matrix_compare(output_info, ref_info, 1);
   }
 	return 0;
 }
