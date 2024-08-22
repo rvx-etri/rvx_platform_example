@@ -96,6 +96,7 @@ int main()
   // verify
   for(int i=0; i<NUN_MATRIX; i=i+1)
   {
+    flush_cache();
     matrix_info_setup(i);
     test_matrix_mult(input_left_info, input_right_info, output_info);
     if(RESULT_CHECK)
