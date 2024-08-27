@@ -13,39 +13,40 @@
 #include "npx_tensor.h"
 #include "npx_network.h"
 
-char mnist_fname[10][255] = {
-    "mnist_app_sample_value_000.bin",
-    "mnist_app_sample_value_001.bin",
-    "mnist_app_sample_value_002.bin",
-    "mnist_app_sample_value_003.bin",
-    "mnist_app_sample_value_004.bin",
-    "mnist_app_sample_value_005.bin",
-    "mnist_app_sample_value_006.bin",
-    "mnist_app_sample_value_007.bin",
-    "mnist_app_sample_value_008.bin",
-    "mnist_app_sample_value_009.bin"
-};
+char app_name[255] = "mnist_app";
+char cfg_fname[255];
+char parameter_fname[255];
+char mnist_fname[255];
 
 int main() {
   if(EXCLUSIVE_ID==0)
   {
-    int i;
-
+    int i = 0;
     int inference_class;
     npx_input_t *npx_input;
-    npx_network_t *net = npx_parse_network_cfg("mnist_app.cfg");
-    printf("The number of layers: %d\n\n", net->num_layers);
-    npx_load_parameter(net, "mnist_app_parameter_quant.bin");
 
-    for (i = 0; i < 10; i++)
+    sprintf(cfg_fname, "%s.cfg", app_name);
+    npx_network_t *net = npx_parse_network_cfg(cfg_fname);
+    printf("The number of layers: %d\n\n", net->num_layers);
+
+    sprintf(parameter_fname, "%s_parameter_quant.bin", app_name);
+    npx_load_parameter(net, parameter_fname);
+    
+    while(1)
     {
-      printf("Image file name: %s\n", mnist_fname[i]);
-      npx_input = npx_load_mnist(net, mnist_fname[i]);
+      sprintf(mnist_fname, "%s_sample_value_%03d.bin", app_name, i);
+      if(fakefile_dict_find(mnist_fname) == NULL)
+        break;
+
+      printf("Image file name: %s\n", mnist_fname);
+      npx_input = npx_load_mnist(net, mnist_fname);
+    
       inference_class = npx_inference(net, npx_input);
       printf("############# Result ############# \n");
       printf("%d / %d (Class / Inference)\n\n\n", npx_input->class, inference_class);
       npx_tensor_free(npx_input->tensor);
       free(npx_input);
+      i++;
     }
   
   }

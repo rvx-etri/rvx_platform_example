@@ -36,7 +36,8 @@ endif
 PLATFORM_DIR = $(call absolute_path,${CURDIR}/../..)
 
 USER_DIR = ${PLATFORM_DIR}/user
-ROM_TARGET_DIR=${PLATFORM_DIR}/util/rom/target
+API_DIR = ${USER_DIR}/api
+TARGET_DIR=${CURDIR}/target
 
 clean:
 	-@rm -rf *.c *.h
@@ -44,9 +45,19 @@ clean:
 convert: clean
 	${PYTHON3_CMD} ${RVX_ENV}/util/convert_file.py -i ${FILE_LIST} -o ${CURDIR} -r ${ROM_NAME}
 
-user:
+user_clean:
+	-cd ${API_DIR} && rm -rf *_file.*
+
+user: user_clean
 	cd ${PLATFORM_DIR} && make user
-	-@cp -f *.c *.h ${USER_DIR}/api
+	-@cp -f *.c *.h ${API_DIR}
+
+add:
+	mkdir -p target
+	cp -r ${ADD_FILE_LIST} ${TARGET_DIR}
+
+remove:
+	-cd ${TARGET_DIR} && rm -rf ${REMOVE_FILE_LIST}
 
 all: convert user
 
