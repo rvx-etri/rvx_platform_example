@@ -31,7 +31,7 @@ int main() {
 
     sprintf(parameter_fname, "%s_parameter_quant.bin", app_name);
     npx_load_parameter(net, parameter_fname);
-    
+
     while(1)
     {
       sprintf(mnist_fname, "%s_sample_value_%03d.bin", app_name, i);
@@ -39,7 +39,7 @@ int main() {
         break;
 
       printf("Image file name: %s\n", mnist_fname);
-      npx_input = npx_load_mnist(net, mnist_fname);
+      npx_input = npx_load_sample(net, mnist_fname);
     
       inference_class = npx_inference(net, npx_input);
       printf("############# Result ############# \n");
@@ -47,6 +47,7 @@ int main() {
       npx_tensor_free(npx_input->tensor);
       free(npx_input);
       i++;
+      break;
     }
   
   }

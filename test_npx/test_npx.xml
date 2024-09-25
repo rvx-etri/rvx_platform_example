@@ -24,7 +24,7 @@
 		</ip_instance>
 
     <sw_define>
-      <use_profiling type="bool">False</use_profiling>
+      <use_profiling type="bool">True</use_profiling>
     </sw_define>
 
     <sim_define>

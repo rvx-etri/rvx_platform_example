@@ -13,7 +13,7 @@ const uint8_t tiger_small_jpg_file_raw[] ALIGNED_DATA BIG_DATA = {
 
 static char tiger_small_jpg_file_filename[] = "tiger_small.jpg";
 static fakefile_chunk_t tiger_small_jpg_file_fakefile_chunk;
-static FAKEFILE* tiger_small_jpg_file = NULL;
+static FAKEFILE tiger_small_jpg_file;
 
 #ifdef USE_FAKEFILE
 static void __attribute__ ((constructor)) construct_tiger_small_jpg_file()
@@ -22,15 +22,13 @@ static void __attribute__ ((constructor)) construct_tiger_small_jpg_file()
 	tiger_small_jpg_file_fakefile_chunk.data = (uint8_t*)tiger_small_jpg_file_raw;
 	tiger_small_jpg_file_fakefile_chunk.size = sizeof(tiger_small_jpg_file_raw);
 	tiger_small_jpg_file_fakefile_chunk.current_size = sizeof(tiger_small_jpg_file_raw);
-	tiger_small_jpg_file = (FAKEFILE*)malloc(sizeof(FAKEFILE));
-	fakefile_init_(tiger_small_jpg_file);
-	tiger_small_jpg_file->status = FILE_STATUS_READ_ONLY;
-	tiger_small_jpg_file->name = tiger_small_jpg_file_filename;
-	tiger_small_jpg_file->head = &tiger_small_jpg_file_fakefile_chunk;
-	fakefile_dict_add(tiger_small_jpg_file);
+	fakefile_init_(&tiger_small_jpg_file);
+	tiger_small_jpg_file.status = FILE_STATUS_READ_ONLY;
+	tiger_small_jpg_file.name = tiger_small_jpg_file_filename;
+	tiger_small_jpg_file.head = &tiger_small_jpg_file_fakefile_chunk;
+	fakefile_dict_add(&tiger_small_jpg_file);
 };
 static void __attribute__ ((destructor)) destruct_tiger_small_jpg_file()
 {
-	free(tiger_small_jpg_file);
 };
 #endif
