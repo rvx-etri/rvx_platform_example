@@ -2,7 +2,7 @@
 #include "ervp_printf.h"
 #include "ervp_variable_allocation.h"
 #include "ervp_matrix_op.h"
-#include "ervp_special_matrix.h"
+#include "ervp_special_matrix_op.h"
 
 #include "test_matrix.h"
 
@@ -58,32 +58,32 @@ int main()
     matrix_info_setup(i);
     generate_test_matrix(input_left_info, i);
     // add
-    matrix_zero(input_right_info);
-    matrix_zero(output_info);
+    matrix_zero_opt(input_right_info);
+    matrix_zero_opt(output_info);
     matrix_add_opt(input_left_info, input_right_info, output_info);
     if(RESULT_CHECK)
       matrix_compare(output_info, input_left_info, 1);
     // sub
-    matrix_zero(input_right_info);
-    matrix_zero(output_info);
+    matrix_zero_opt(input_right_info);
+    matrix_zero_opt(output_info);
     matrix_sub_opt(input_left_info, input_right_info, output_info);
     if(RESULT_CHECK)
       matrix_compare(output_info, input_left_info, 1);
     // ewmult
-    matrix_one(input_right_info);
-    matrix_zero(output_info);
+    matrix_one_opt(input_right_info);
+    matrix_zero_opt(output_info);
     matrix_ewmult_opt(input_left_info, input_right_info, output_info);
     if(RESULT_CHECK)
       matrix_compare(output_info, input_left_info, 1);
     // scalar mult
-    matrix_one(input_right_info);
-    matrix_zero(output_info);
+    matrix_one_opt(input_right_info);
+    matrix_zero_opt(output_info);
     matrix_scalar_mult_fixed_opt(input_left_info, 1, output_info);
     if(RESULT_CHECK)
       matrix_compare(output_info, input_left_info, 1);
     // mult
-    matrix_identity(input_right_info);
-    matrix_zero(output_info);
+    matrix_identity_opt(input_right_info);
+    matrix_zero_opt(output_info);
     matrix_mult_opt(input_left_info, input_right_info, output_info);
     if(RESULT_CHECK)
       matrix_compare(output_info, input_left_info, 1);

@@ -3,8 +3,8 @@
 #include "ervp_multicore_synch.h"
 
 #include "ervp_matrix.h"
-#include "ervp_matrix_op.h"
-#include "ervp_special_matrix.h"
+#include "ervp_matrix_op_sw.h"
+#include "ervp_special_matrix_op.h"
 
 #include "test_matrix.h"
 
@@ -44,7 +44,7 @@ int main() {
     // generate kernal and ref
     if(KERNEL_MATRIX_SIZE==1)
     {
-      matrix_one(kernel_info);
+      matrix_one_opt(kernel_info);
       ref_info = input_info;
     }
     else

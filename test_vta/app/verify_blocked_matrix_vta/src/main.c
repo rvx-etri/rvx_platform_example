@@ -2,36 +2,47 @@
 #include "ervp_printf.h"
 #include "ervp_printf_section.h"
 #include "ervp_variable_allocation.h"
-#include "ervp_special_matrix.h"
+#include "ervp_special_matrix_op.h"
 #include "core_dependent.h"
 #include "ervp_matrix.h"
 #include "ervp_matrix_op.h"
-#include "ervp_matrix_blocked.h"
+#include "ervp_matrix_op_sw.h"
+#include "vta_api.h"
 
 #include "test_matrix.h"
 
 // this app is modified from "verify_matrix_opt"
 
-#define BLOCK_SIZE 8
+#define BLOCK_SIZE 16
+
+static void blocked_matrix_mult_vta(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, ErvpMatrixInfo* c)
+{
+  matrix_zero_opt(c);
+  blocked_matrix_mac(a,b,c,BLOCK_SIZE);
+}
+
+static void submatrix_mult_vta(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, ErvpMatrixInfo* c)
+{
+  matrix_mult_vta(a,b,c);
+}
 
 static inline void register_opt_function()
 {
-  matrix_add_opt = matrix_add_sw;
-  matrix_sub_opt = matrix_sub_sw;
-  matrix_ewmult_opt = matrix_ewmult_sw;
-  matrix_mult_opt = matrix_mult_sw;
+  matrix_mult_opt = blocked_matrix_mult_vta;
+  submatrix_mult_opt = submatrix_mult_vta;
+  submatrix_mac_opt = NULL;
 }
 
-static char hw_name[] = "BLOCKED_SW";
+static char hw_name[] = "BLOCKED_VTA";
 
 ///////////////////////////////////////////////////////////////
 
 #define NUN_MATRIX 1
 #define TEST_MATRIX_SIZE 16
 
-#define VERIFY_ADD 1
-#define VERIFY_SUB 1
-#define VERIFY_EWMULT 1
+#define VERIFY_ADD 0
+#define VERIFY_SUB 0
+#define VERIFY_EWMULT 0
 #define VERIFY_MULT 1
 
 #define ML_DATATYPE MATRIX_DATATYPE_SINT08
@@ -118,7 +129,7 @@ int main()
       flush_cache();
       matrix_info_setup(i);
       matrix_add_sw(input_left_info, input_right_info, ref_info);
-      matrix_add_blocked(input_left_info, input_right_info, output_info, BLOCK_SIZE);
+      matrix_add_opt(input_left_info, input_right_info, output_info);
       all_are_equal = matrix_compare(output_info, ref_info, 1);
       if(!all_are_equal)
       {
@@ -140,7 +151,7 @@ int main()
       flush_cache();
       matrix_info_setup(i);
       matrix_sub_sw(input_left_info, input_right_info, ref_info);
-      matrix_sub_blocked(input_left_info, input_right_info, output_info, BLOCK_SIZE);
+      matrix_sub_opt(input_left_info, input_right_info, output_info);
       all_are_equal = matrix_compare(output_info, ref_info, 1);
       if(!all_are_equal)
       {
@@ -162,7 +173,7 @@ int main()
       flush_cache();
       matrix_info_setup(i);
       matrix_ewmult_sw(input_left_info, input_right_info, ref_info);
-      matrix_ewmult_blocked(input_left_info, input_right_info, output_info, BLOCK_SIZE);
+      matrix_ewmult_opt(input_left_info, input_right_info, output_info);
       all_are_equal = matrix_compare(output_info, ref_info, 1);
       if(!all_are_equal)
       {
@@ -184,7 +195,7 @@ int main()
       flush_cache();
       matrix_info_setup(i);
       matrix_mult_sw(input_left_info, input_right_info, ref_info);
-      matrix_mult_blocked(input_left_info, input_right_info, output_info, BLOCK_SIZE);
+      matrix_mult_opt(input_left_info, input_right_info, output_info);
       all_are_equal = matrix_compare(output_info, ref_info, 1);
       if(!all_are_equal)
       {

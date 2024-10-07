@@ -12,20 +12,26 @@
 
 // this app is modified from "verify_matrix_opt"
 
+#define BLOCK_SIZE 8
+
 static inline void register_opt_function()
 {
-  matrix_add_opt = matrix_add_sw;
-  matrix_sub_opt = matrix_sub_sw;
-  matrix_ewmult_opt = matrix_ewmult_sw;
-  matrix_mult_opt = matrix_mult_sw;
+  matrix_op_register_blocked(BLOCK_SIZE);
+  submatrix_add_opt = matrix_add_sw;
+  submatrix_sub_opt = matrix_sub_sw;
+  submatrix_ewmult_opt = matrix_ewmult_sw;
+  submatrix_mult_opt = NULL;
+  submatrix_mac_opt = matrix_mac_sw;
+  //submatrix_mult_opt = matrix_mult_sw;
+  //submatrix_mac_opt = NULL;
 }
 
-static char hw_name[] = "SW";
+static char hw_name[] = "BLOCKED_SW";
 
 ///////////////////////////////////////////////////////////////
 
 #define NUN_MATRIX 1
-#define TEST_MATRIX_SIZE 4
+#define TEST_MATRIX_SIZE 20
 
 #define VERIFY_ADD 1
 #define VERIFY_SUB 1
@@ -197,5 +203,3 @@ int main()
 
   flush_cache();
 }
-
-

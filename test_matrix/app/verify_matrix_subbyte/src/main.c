@@ -5,7 +5,7 @@
 #include "ervp_variable_allocation.h"
 
 #include "ervp_matrix_element.h"
-#include "ervp_special_matrix.h"
+#include "ervp_special_matrix_op.h"
 
 
 #define MATRIX_SIZE 4
@@ -22,6 +22,8 @@ ErvpMatrixInfo* matrix_ref1_info = NULL;
 ErvpMatrixInfo* matrix_ref2_info = NULL;
 ErvpMatrixInfo* matrix_ref3_info = NULL;
 
+#define SKIP_SIM 1
+
 void matrix_info_init()
 {
   matrix_ref0_info = matrix_generate_info(MATRIX_DATATYPE_UINT08,MATRIX_SIZE,MATRIX_SIZE,matrix_ref0, NULL);
@@ -33,9 +35,9 @@ void matrix_info_init()
 int main()
 {
   matrix_info_init();
-  matrix_identity(matrix_ref2_info);
+  matrix_identity_opt(matrix_ref2_info);
   //
-  printf_section("subbyte matrix print");
+  printf_section(SKIP_SIM, "subbyte matrix print");
   matrix_print_hex(matrix_ref0_info);
   if(!is_sim())
   {
@@ -45,9 +47,9 @@ int main()
   }
 
   //
-  printf_section("subbyte matrix test 0");
+  printf_section(SKIP_SIM, "subbyte matrix test 0");
   matrix_test_info = matrix_generate_info(MATRIX_DATATYPE_UINT01,MATRIX_SIZE,MATRIX_SIZE,matrix_test,matrix_test_info);
-  matrix_identity(matrix_test_info);
+  matrix_identity_opt(matrix_test_info);
   if(!is_sim())
   {
     matrix_print(matrix_test_info);
@@ -56,9 +58,9 @@ int main()
   matrix_compare(matrix_test_info,matrix_ref2_info,1);
 
   //
-  printf_section("subbyte matrix test 1");
+  printf_section(SKIP_SIM, "subbyte matrix test 1");
   matrix_test_info = matrix_generate_info(MATRIX_DATATYPE_SINT02,MATRIX_SIZE,MATRIX_SIZE,matrix_test,matrix_test_info);
-  matrix_identity(matrix_test_info);
+  matrix_identity_opt(matrix_test_info);
   if(!is_sim())
   {
     matrix_print(matrix_test_info);
@@ -67,9 +69,9 @@ int main()
   matrix_compare(matrix_test_info,matrix_ref2_info,1);
 
   //
-  printf_section("subbyte matrix test 2");
+  printf_section(SKIP_SIM, "subbyte matrix test 2");
   matrix_test_info = matrix_generate_info(MATRIX_DATATYPE_UINT04,MATRIX_SIZE,MATRIX_SIZE,matrix_test,matrix_test_info);
-  matrix_identity(matrix_test_info);
+  matrix_identity_opt(matrix_test_info);
   if(!is_sim())
   {
     matrix_print(matrix_test_info);
@@ -78,7 +80,7 @@ int main()
   matrix_compare(matrix_test_info,matrix_ref2_info,1);
 
   //
-  printf_section("subbyte matrix test 3");
+  printf_section(SKIP_SIM, "subbyte matrix test 3");
   matrix_test_info = matrix_generate_info(MATRIX_DATATYPE_UINT08,MATRIX_SIZE,MATRIX_SIZE,matrix_test,matrix_test_info);
   for(int i=0; i<MATRIX_SIZE; i++)
     for(int j=0; j<MATRIX_SIZE; j++)
