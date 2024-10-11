@@ -7,6 +7,13 @@
 #include "ervp_variable_allocation.h"
 #include "ervp_mmio_util.h"
 #include "ervp_matrix.h"
+#include "ervp_matrix_op_sw.h"
+#include "ervp_matrix_op.h"
+#include "ervp_matrix_datatype_define.h"
+#include "ervp_assert.h"
+
+#include "ervp_tensor.h"
+#include "core_dependent.h"
 
 #define VTA_DATA __attribute__ ((aligned(0x1000)))
 
@@ -17,7 +24,6 @@ typedef struct uint128_s
      uint64_t msb;
 } uint128_t;
 
-
 // Register Map
 // 0x00 : Control signals
 //        bit 0  - ap_start (Read/Write/COH)
@@ -27,7 +33,6 @@ typedef struct uint128_s
 //        bit 7  - auto_restart (Read/Write)
 //        bit 9  - interrupt (Read)
 //        others - reserved
-
 
 //=====================================================================================
 //INFO - Blocked GEMM test: batch=16, in_channels=16, out_channels=16, uop_comp=0
@@ -73,8 +78,25 @@ static int8_t right_matrix[BUFFER_SIZE] BIG_DATA_BSS VTA_DATA;
 static uint32_t zero_matrix[BUFFER_SIZE] BIG_DATA_BSS VTA_DATA;
 static int8_t output_matrix[BUFFER_SIZE] BIG_DATA_BSS VTA_DATA;
 
-void matrix_mult_vta(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, ErvpMatrixInfo* c)
+void matrix_mult_vta_16x16(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, ErvpMatrixInfo* c)
 {
+  assert(a->num_row == 16);
+  assert(a->num_col == 16);
+  assert(b->num_row == 16);
+  assert(b->num_col == 16);
+  assert(c->num_row == 16);
+  assert(c->num_col == 16);
+  assert(matrix_datatype_get_num_bits(a->datatype)==8);
+  assert(matrix_datatype_get_num_bits(c->datatype)==8);
+
+  ErvpMatrixInfo *a_buffer = matrix_alloc(a->datatype, a->num_row, a->num_col, NULL);
+  ErvpMatrixInfo *b_buffer = matrix_alloc(b->datatype, b->num_col, b->num_row, NULL);
+  ErvpMatrixInfo *c_buffer = matrix_alloc(c->datatype, c->num_row, c->num_col, NULL);
+
+  matrix_reshape_opt(a, a_buffer);
+  matrix_transpose_opt(b, b_buffer);
+  flush_cache();
+
   // ap start
   REG32(XVTA_CONTROL_ADDR_AP_CTRL) = 0x0;
   // Data signal of insn_count
@@ -85,23 +107,44 @@ void matrix_mult_vta(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, ErvpMatri
   // Data signal of uops
   REG32(XVTA_CONTROL_ADDR_UOPS_DATA)    = uops;
   // Data signal of inputs
-  REG32(XVTA_CONTROL_ADDR_INPUTS_DATA)  = a->addr;
+  REG32(XVTA_CONTROL_ADDR_INPUTS_DATA)  = a_buffer->addr;
   // Data signal of weights
-  REG32(XVTA_CONTROL_ADDR_WEIGHTS_DATA) = b->addr;
+  REG32(XVTA_CONTROL_ADDR_WEIGHTS_DATA) = b_buffer->addr;
   // Data signal of biases
   REG32(XVTA_CONTROL_ADDR_BIASES_DATA)  = zero_matrix;
   // Data signal of outputs
-  REG32(XVTA_CONTROL_ADDR_OUTPUTS_DATA) = c->addr;
+  REG32(XVTA_CONTROL_ADDR_OUTPUTS_DATA) = c_buffer->addr;
 
   REG32(XVTA_CONTROL_ADDR_AP_CTRL) = 0x1;   // ap_start
-  printf("\nstart");
+  //printf("\nstart");
   while(1)
   {
     int ap_done = vta_status() & 0x0002;
     if(ap_done)
     {
-      printf("\nend");
+      //printf("\nend");
       break;
     }
   }
+
+  matrix_reshape_opt(c_buffer, c);
+
+#if 0
+  ErvpMatrixInfo *ref = matrix_alloc(c->datatype, c->num_row, c->num_col, NULL);
+  matrix_mult_sw(a, b, ref);
+  int all_are_equal = matrix_compare(c, ref, 1);
+  if(!all_are_equal)
+  {
+    matrix_print(c);
+    matrix_print(ref);
+
+    matrix_print(ref);
+    assert(0);
+  }
+  matrix_free(ref);
+#endif
+
+  matrix_free(a_buffer);
+  matrix_free(b_buffer);
+  matrix_free(c_buffer);
 }
