@@ -3,6 +3,7 @@
 #include "ervp_variable_allocation.h"
 #include "ervp_matrix_op.h"
 #include "ervp_special_matrix_op.h"
+#include "ervp_core_id.h"
 
 #include "test_matrix.h"
 
@@ -50,43 +51,47 @@ void matrix_info_setup(int index)
 
 int main()
 {
-  // init info
-  matrix_info_init();
-  for(int i=0; i<NUN_MATRIX; i=i+1)
+  if(EXCLUSIVE_ID==0)
   {
-    // init matrices
-    matrix_info_setup(i);
-    generate_test_matrix(input_left_info, i);
-    // add
-    matrix_zero_opt(input_right_info);
-    matrix_zero_opt(output_info);
-    matrix_add_opt(input_left_info, input_right_info, output_info);
-    if(RESULT_CHECK)
-      matrix_compare(output_info, input_left_info, 1);
-    // sub
-    matrix_zero_opt(input_right_info);
-    matrix_zero_opt(output_info);
-    matrix_sub_opt(input_left_info, input_right_info, output_info);
-    if(RESULT_CHECK)
-      matrix_compare(output_info, input_left_info, 1);
-    // ewmult
-    matrix_one_opt(input_right_info);
-    matrix_zero_opt(output_info);
-    matrix_ewmult_opt(input_left_info, input_right_info, output_info);
-    if(RESULT_CHECK)
-      matrix_compare(output_info, input_left_info, 1);
-    // scalar mult
-    matrix_one_opt(input_right_info);
-    matrix_zero_opt(output_info);
-    matrix_scalar_mult_fixed_opt(input_left_info, 1, output_info);
-    if(RESULT_CHECK)
-      matrix_compare(output_info, input_left_info, 1);
-    // mult
-    matrix_identity_opt(input_right_info);
-    matrix_zero_opt(output_info);
-    matrix_mult_opt(input_left_info, input_right_info, output_info);
-    if(RESULT_CHECK)
-      matrix_compare(output_info, input_left_info, 1);
+    // init
+    matrix_op_check();
+    matrix_info_init();
+    for(int i=0; i<NUN_MATRIX; i=i+1)
+    {
+      // init matrices
+      matrix_info_setup(i);
+      generate_test_matrix(input_left_info, i);
+      // add
+      matrix_zero_opt(input_right_info);
+      matrix_zero_opt(output_info);
+      matrix_add_opt(input_left_info, input_right_info, output_info, 0);
+      if(RESULT_CHECK)
+        matrix_compare(output_info, input_left_info, 1);
+      // sub
+      matrix_zero_opt(input_right_info);
+      matrix_zero_opt(output_info);
+      matrix_sub_opt(input_left_info, input_right_info, output_info, 0);
+      if(RESULT_CHECK)
+        matrix_compare(output_info, input_left_info, 1);
+      // ewmult
+      matrix_one_opt(input_right_info);
+      matrix_zero_opt(output_info);
+      matrix_ewmult_opt(input_left_info, input_right_info, output_info, 0);
+      if(RESULT_CHECK)
+        matrix_compare(output_info, input_left_info, 1);
+      // scalar mult
+      matrix_one_opt(input_right_info);
+      matrix_zero_opt(output_info);
+      matrix_scalar_mult_fixed_opt(input_left_info, 1, output_info, 0);
+      if(RESULT_CHECK)
+        matrix_compare(output_info, input_left_info, 1);
+      // mult
+      matrix_identity_opt(input_right_info);
+      matrix_zero_opt(output_info);
+      matrix_mult_opt(input_left_info, input_right_info, output_info, 0);
+      if(RESULT_CHECK)
+        matrix_compare(output_info, input_left_info, 1);
+    }
   }
-	return 0;
+  return 0;
 }

@@ -25,7 +25,11 @@
 		<ip_instance>
 			<name>i_main_core</name>
 			<library_name>rvc_orca</library_name>
-		</ip_instance>
+    </ip_instance>
+
+    <sw_define>
+      <check_vta>True</check_vta>
+    </sw_define>
 
 	</platform>
 </rvx>

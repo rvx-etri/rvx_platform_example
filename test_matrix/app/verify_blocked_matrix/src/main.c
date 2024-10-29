@@ -7,23 +7,21 @@
 #include "ervp_matrix.h"
 #include "ervp_matrix_op.h"
 #include "ervp_matrix_op_sw.h"
+#include "ervp_core_id.h"
 
 #include "test_matrix.h"
 
 // this app is modified from "verify_matrix_opt"
 
-#define BLOCK_SIZE 8
+#define BLOCK_SIZE 4
 
-static inline void register_opt_function()
+static inline void register_matrix_function()
 {
   matrix_op_register_blocked(BLOCK_SIZE);
-  submatrix_add_opt = matrix_add_sw;
-  submatrix_sub_opt = matrix_sub_sw;
-  submatrix_ewmult_opt = matrix_ewmult_sw;
-  submatrix_mult_opt = NULL;
+  submatrix_mult_opt = NULL_FTN_POINTER;
   submatrix_mac_opt = matrix_mac_sw;
   //submatrix_mult_opt = matrix_mult_sw;
-  //submatrix_mac_opt = NULL;
+  //submatrix_mac_opt = NULL_FTN_POINTER;
 }
 
 static char hw_name[] = "BLOCKED_SW";
@@ -31,7 +29,7 @@ static char hw_name[] = "BLOCKED_SW";
 ///////////////////////////////////////////////////////////////
 
 #define NUN_MATRIX 1
-#define TEST_MATRIX_SIZE 20
+#define TEST_MATRIX_SIZE 6
 
 #define VERIFY_ADD 1
 #define VERIFY_SUB 1
@@ -98,108 +96,113 @@ void matrix_info_setup(int index)
 
 int main()
 {
-  int all_are_equal;
-
-  // init
-  matrix_info_init();
-  register_opt_function();
-
-  // init matrices
-  for(int i=0; i<NUN_MATRIX; i=i+1)
+  if(EXCLUSIVE_ID==0)
   {
-    matrix_info_setup(i);
-    generate_test_matrix(input_left_info, i);
-    generate_test_matrix(input_right_info, i+1);
-  }
-  flush_cache();
+    int all_are_equal;
 
-  //
-  if(VERIFY_ADD)
-  {
-    printf_section(SKIP_SIM, "%s_ADD", hw_name);
+    // init
+    register_matrix_function();
+    matrix_op_check();
+    matrix_info_init();
+
+    // init matrices
     for(int i=0; i<NUN_MATRIX; i=i+1)
     {
-      flush_cache();
       matrix_info_setup(i);
-      matrix_add_sw(input_left_info, input_right_info, ref_info);
-      matrix_add_opt(input_left_info, input_right_info, output_info);
-      all_are_equal = matrix_compare(output_info, ref_info, 1);
-      if(!all_are_equal)
-      {
-        matrix_print(input_left_info);
-        matrix_print(input_right_info);
-        matrix_print(output_info);
-        matrix_print(ref_info);
-        break;
-      }
+      generate_test_matrix(input_left_info, i);
+      generate_test_matrix(input_right_info, i+1);
     }
-  }
-  
-  //
-  if(VERIFY_SUB)
-  {
-    printf_section(SKIP_SIM, "%s_SUB", hw_name);
-    for(int i=0; i<NUN_MATRIX; i=i+1)
-    {
-      flush_cache();
-      matrix_info_setup(i);
-      matrix_sub_sw(input_left_info, input_right_info, ref_info);
-      matrix_sub_opt(input_left_info, input_right_info, output_info);
-      all_are_equal = matrix_compare(output_info, ref_info, 1);
-      if(!all_are_equal)
-      {
-        matrix_print(input_left_info);
-        matrix_print(input_right_info);
-        matrix_print(output_info);
-        matrix_print(ref_info);
-        break;
-      }
-    }
-  }
-  
-  //
-  if(VERIFY_EWMULT)
-  {
-    printf_section(SKIP_SIM, "%s_EWMULT", hw_name);
-    for(int i=0; i<NUN_MATRIX; i=i+1)
-    {
-      flush_cache();
-      matrix_info_setup(i);
-      matrix_ewmult_sw(input_left_info, input_right_info, ref_info);
-      matrix_ewmult_opt(input_left_info, input_right_info, output_info);
-      all_are_equal = matrix_compare(output_info, ref_info, 1);
-      if(!all_are_equal)
-      {
-        matrix_print(input_left_info);
-        matrix_print(input_right_info);
-        matrix_print(output_info);
-        matrix_print(ref_info);
-        break;
-      }
-    }
-  }
-  
-  //
-  if(VERIFY_MULT)
-  {
-    printf_section(SKIP_SIM, "%s_MULT", hw_name);
-    for(int i=0; i<NUN_MATRIX; i=i+1)
-    {
-      flush_cache();
-      matrix_info_setup(i);
-      matrix_mult_sw(input_left_info, input_right_info, ref_info);
-      matrix_mult_opt(input_left_info, input_right_info, output_info);
-      all_are_equal = matrix_compare(output_info, ref_info, 1);
-      if(!all_are_equal)
-      {
-        matrix_print(input_left_info);
-        matrix_print(input_right_info);
-        matrix_print(output_info);
-        matrix_print(ref_info);
-        break;
-      }
-    }
-  }
+    flush_cache();
 
-  flush_cache();
+    //
+    if(VERIFY_ADD)
+    {
+      printf_section(SKIP_SIM, "%s_ADD", hw_name);
+      for(int i=0; i<NUN_MATRIX; i=i+1)
+      {
+        flush_cache();
+        matrix_info_setup(i);
+        matrix_add_sw(input_left_info, input_right_info, ref_info, 0);
+        matrix_add_opt(input_left_info, input_right_info, output_info, 0);
+        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        if(!all_are_equal)
+        {
+          matrix_print(input_left_info);
+          matrix_print(input_right_info);
+          matrix_print(output_info);
+          matrix_print(ref_info);
+          break;
+        }
+      }
+    }
+    
+    //
+    if(VERIFY_SUB)
+    {
+      printf_section(SKIP_SIM, "%s_SUB", hw_name);
+      for(int i=0; i<NUN_MATRIX; i=i+1)
+      {
+        flush_cache();
+        matrix_info_setup(i);
+        matrix_sub_sw(input_left_info, input_right_info, ref_info, 0);
+        matrix_sub_opt(input_left_info, input_right_info, output_info, 0);
+        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        if(!all_are_equal)
+        {
+          matrix_print(input_left_info);
+          matrix_print(input_right_info);
+          matrix_print(output_info);
+          matrix_print(ref_info);
+          break;
+        }
+      }
+    }
+    
+    //
+    if(VERIFY_EWMULT)
+    {
+      printf_section(SKIP_SIM, "%s_EWMULT", hw_name);
+      for(int i=0; i<NUN_MATRIX; i=i+1)
+      {
+        flush_cache();
+        matrix_info_setup(i);
+        matrix_ewmult_sw(input_left_info, input_right_info, ref_info, 0);
+        matrix_ewmult_opt(input_left_info, input_right_info, output_info, 0);
+        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        if(!all_are_equal)
+        {
+          matrix_print(input_left_info);
+          matrix_print(input_right_info);
+          matrix_print(output_info);
+          matrix_print(ref_info);
+          break;
+        }
+      }
+    }
+    
+    //
+    if(VERIFY_MULT)
+    {
+      printf_section(SKIP_SIM, "%s_MULT", hw_name);
+      for(int i=0; i<NUN_MATRIX; i=i+1)
+      {
+        flush_cache();
+        matrix_info_setup(i);
+        matrix_mult_sw(input_left_info, input_right_info, ref_info, 0);
+        matrix_mult_opt(input_left_info, input_right_info, output_info, 0);
+        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        if(!all_are_equal)
+        {
+          matrix_print(input_left_info);
+          matrix_print(input_right_info);
+          matrix_print(output_info);
+          matrix_print(ref_info);
+          break;
+        }
+      }
+    }
+
+    flush_cache();
+  }
+  return 0;
 }

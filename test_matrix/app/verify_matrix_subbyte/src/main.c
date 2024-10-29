@@ -34,6 +34,9 @@ void matrix_info_init()
 
 int main()
 {
+  // init
+  matrix_op_register_sw();
+  matrix_op_check();
   matrix_info_init();
   matrix_identity_opt(matrix_ref2_info);
   //

@@ -8,33 +8,31 @@
 #include "ervp_matrix_op_sw.h"
 #include "ervp_core_id.h"
 
+#include "vta_api.h"
 #include "test_matrix.h"
 
 // this app is modified from "verify_matrix_opt"
 
 static inline void register_matrix_function()
 {
-  matrix_add_opt = matrix_add_sw;
-  matrix_sub_opt = matrix_sub_sw;
-  matrix_ewmult_opt = matrix_ewmult_sw;
-  matrix_mult_opt = matrix_mult_sw;
+  matrix_mult_opt = matrix_mult_vta_16x16;
 }
 
-static char hw_name[] = "SW";
+static char hw_name[] = "VTA";
 
 ///////////////////////////////////////////////////////////////
 
 #define NUN_MATRIX 1
-#define TEST_MATRIX_SIZE 4
+#define TEST_MATRIX_SIZE 16
 
-#define VERIFY_ADD 1
-#define VERIFY_SUB 1
-#define VERIFY_EWMULT 1
+#define VERIFY_ADD 0
+#define VERIFY_SUB 0
+#define VERIFY_EWMULT 0
 #define VERIFY_MULT 1
 
-#define ML_DATATYPE MATRIX_DATATYPE_SINT08
-#define MR_DATATYPE MATRIX_DATATYPE_SINT08
-#define MO_DATATYPE MATRIX_DATATYPE_SINT08
+#define ML_DATATYPE MATRIX_DATATYPE_SINT32
+#define MR_DATATYPE MATRIX_DATATYPE_SINT32
+#define MO_DATATYPE MATRIX_DATATYPE_SINT32
 
 #if (GET_NUM_BITS(ML_DATATYPE)==32)
 typedef uint32_t ml_type_t;
