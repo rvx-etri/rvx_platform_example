@@ -42,5 +42,9 @@
       </define>
     </clock_info>
 
+    <sw_define>
+      <caching_most>True</caching_most>
+    </sw_define>
+
 	</platform>
 </rvx>

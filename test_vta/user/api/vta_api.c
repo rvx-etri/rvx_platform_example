@@ -38,7 +38,7 @@ typedef struct uint128_s
 //INFO - Blocked GEMM test: batch=16, in_channels=16, out_channels=16, uop_comp=0
 //inp_size=16 wgt_size=1 out_size=16
 //batch =16 [16][16] : max 
-uint32_t insns[] MUST_DRAM VTA_DATA = {
+uint32_t insns[] NOTCACHED_DATA VTA_DATA = {
   0x00000000, 0x00000000, 0x00100001, 0x00000010,  // LOAD
   0x000001a0, 0x00000000, 0x00100001, 0x00000010,  // LOAD
   0x00000090, 0x00000000, 0x00010001, 0x00000001,  // LOAD
@@ -48,7 +48,7 @@ uint32_t insns[] MUST_DRAM VTA_DATA = {
   0x00000013, 0x00000000, 0x00000000, 0x00000000}; // FINISH
 
 ////// micro operation  (dst_idx, src_idx, wgt_idx)
-uint32_t uops[] MUST_DRAM VTA_DATA = {
+uint32_t uops[] NOTCACHED_DATA VTA_DATA = {
   0x00000000,
   0x00000801,
   0x00001002,
@@ -73,10 +73,10 @@ int vta_status(void)
 
 #define BUFFER_SIZE (16*16)
 
-static uint32_t left_buffer[BUFFER_SIZE] MUST_DRAM VTA_DATA;
-static uint32_t right_buffer[BUFFER_SIZE] MUST_DRAM VTA_DATA;
-static uint32_t zero_buffer[BUFFER_SIZE] MUST_DRAM VTA_DATA;
-static uint32_t output_buffer[BUFFER_SIZE] MUST_DRAM VTA_DATA;
+static uint32_t left_buffer[BUFFER_SIZE] NOTCACHED_DATA VTA_DATA;
+static uint32_t right_buffer[BUFFER_SIZE] NOTCACHED_DATA VTA_DATA;
+static uint32_t zero_buffer[BUFFER_SIZE] NOTCACHED_DATA VTA_DATA;
+static uint32_t output_buffer[BUFFER_SIZE] NOTCACHED_DATA VTA_DATA;
 
 static ErvpMatrixInfo left_buffer_info;
 static ErvpMatrixInfo right_buffer_info;
@@ -139,11 +139,12 @@ void matrix_mult_vta_16x16(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, Erv
 
   matrix_copy_opt(a, left_info, 0);
   matrix_transpose_opt(b, right_info, 0);
+#ifdef CACHING_ALL
   flush_cache();
+#endif
 
   // ap start
   REG32(XVTA_CONTROL_ADDR_AP_CTRL) = 0x0;
-  setup_vta_var();
   REG32(XVTA_CONTROL_ADDR_AP_CTRL) = 0x1;   // ap_start
 
 #ifdef CHECK_VTA
@@ -168,6 +169,7 @@ void matrix_mult_vta_16x16(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, Erv
   }
 
   matrix_copy_opt(output_info, c, options);
+  flush_cache();
 }
 
 void matrix_mult_vta(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, ErvpMatrixInfo* c, int options)
@@ -185,11 +187,12 @@ void matrix_mult_vta(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, ErvpMatri
   matrix_copy_part_opt(a, left_info, a->num_row, a->num_col, 0);
   matrix_zero_opt(right_info);
   matrix_transpose_part_sw(b, right_info, b->num_row, b->num_col, 0);
+#ifdef CACHING_ALL
   flush_cache();
+#endif
 
   // ap start
   REG32(XVTA_CONTROL_ADDR_AP_CTRL) = 0x0;
-  setup_vta_var();
   REG32(XVTA_CONTROL_ADDR_AP_CTRL) = 0x1;   // ap_start
 #ifdef CHECK_VTA
   ++num_vta;
@@ -213,5 +216,4 @@ void matrix_mult_vta(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, ErvpMatri
   }
 
   matrix_copy_part_opt(output_info, c, c->num_row, c->num_col, options);
-  flush_cache();
 }
