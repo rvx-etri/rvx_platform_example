@@ -6,7 +6,7 @@
 		<spec>
 			<define>
 				<name>sram_size</name>
-				<value>256kB</value>
+				<value>64kB</value>
 			</define>
 			<define>
 				<name>include_fast_dram</name>

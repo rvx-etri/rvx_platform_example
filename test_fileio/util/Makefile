@@ -25,7 +25,7 @@ endif
 TEMPLATE_FILE = ${RVX_ENV}/makefile/Makefile.util.template
 include ${RVX_UTIL_HOME}/template_makefile.mh
 
-UTIL_LIST=mmio rom image fakefile npx
+UTIL_LIST=mmio rom image fakefile npx arx
 
 $(addsuffix .base, ${UTIL_LIST}):%.base:
 	@if [ ! -d $(*) ]; \
@@ -50,4 +50,4 @@ $(addsuffix .clean, ${UTIL_LIST}):%.clean:
 
 -include ./user_util.mh
 
-.PHONY: mmio rom image
+.PHONY: ${UTIL_LIST}
