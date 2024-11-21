@@ -1,0 +1,52 @@
+<?xml version="1.0" ?>
+<rvx>
+	<platform>
+		<name>test_mmiox</name>
+		<status>described</status>
+		<spec>
+			<define>
+				<name>sram_size</name>
+				<value>128kB</value>
+			</define>
+    </spec>
+
+		<ip_instance>
+			<name>i_main_core</name>
+			<library_name>rvc_orca</library_name>
+    </ip_instance>
+
+    <ip_instance>
+			<name>i_test_mmiox</name>
+      <library_name>user_mmiox</library_name>
+      <parameter>
+        <id>BW_INST</id>
+        <value>62</value>
+      </parameter>
+      <parameter>
+        <id>INST_FIFO_DEPTH</id>
+        <value>8</value>
+      </parameter>
+      <parameter>
+        <id>LOG_FIFO_DEPTH</id>
+        <value>0</value>
+      </parameter>
+      <parameter>
+        <id>BW_CONFIG</id>
+        <value>64</value>
+      </parameter>
+      <parameter>
+        <id>BW_STATUS</id>
+        <value>32</value>
+      </parameter>
+      <parameter>
+        <id>BW_INPUT</id>
+        <value>64</value>
+      </parameter>
+      <parameter>
+        <id>BW_OUTPUT</id>
+        <value>64</value>
+      </parameter>
+    </ip_instance>
+
+	</platform>
+</rvx>

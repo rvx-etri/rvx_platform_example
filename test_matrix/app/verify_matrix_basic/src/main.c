@@ -4,6 +4,7 @@
 #include "ervp_matrix_op.h"
 #include "ervp_special_matrix_op.h"
 #include "ervp_core_id.h"
+#include "ervp_assert.h"
 
 #include "test_matrix.h"
 
@@ -66,31 +67,46 @@ int main()
       matrix_zero_opt(output_info);
       matrix_add_opt(input_left_info, input_right_info, output_info, 0);
       if(RESULT_CHECK)
-        matrix_compare(output_info, input_left_info, 1);
+      {
+        int all_are_equal = matrix_compare(output_info, input_left_info, 1);
+        assert(all_are_equal);
+      }
       // sub
       matrix_zero_opt(input_right_info);
       matrix_zero_opt(output_info);
       matrix_sub_opt(input_left_info, input_right_info, output_info, 0);
       if(RESULT_CHECK)
-        matrix_compare(output_info, input_left_info, 1);
+      {
+        int all_are_equal = matrix_compare(output_info, input_left_info, 1);
+        assert(all_are_equal);
+      }
       // ewmult
       matrix_one_opt(input_right_info);
       matrix_zero_opt(output_info);
       matrix_ewmult_opt(input_left_info, input_right_info, output_info, 0);
       if(RESULT_CHECK)
-        matrix_compare(output_info, input_left_info, 1);
+      {
+        int all_are_equal = matrix_compare(output_info, input_left_info, 1);
+        assert(all_are_equal);
+      }
       // scalar mult
       matrix_one_opt(input_right_info);
       matrix_zero_opt(output_info);
       matrix_scalar_mult_fixed_opt(input_left_info, 1, output_info, 0);
       if(RESULT_CHECK)
-        matrix_compare(output_info, input_left_info, 1);
+      {
+        int all_are_equal = matrix_compare(output_info, input_left_info, 1);
+        assert(all_are_equal);
+      }
       // mult
       matrix_identity_opt(input_right_info);
       matrix_zero_opt(output_info);
       matrix_mult_opt(input_left_info, input_right_info, output_info, 0);
       if(RESULT_CHECK)
-        matrix_compare(output_info, input_left_info, 1);
+      {
+        int all_are_equal = matrix_compare(output_info, input_left_info, 1);
+        assert(all_are_equal);
+      }
     }
   }
   return 0;

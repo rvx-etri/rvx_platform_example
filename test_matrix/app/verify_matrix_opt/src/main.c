@@ -7,6 +7,7 @@
 #include "ervp_matrix_op.h"
 #include "ervp_matrix_op_sw.h"
 #include "ervp_core_id.h"
+#include "ervp_assert.h"
 
 #include "test_matrix.h"
 
@@ -127,6 +128,7 @@ int main()
           matrix_print(input_right_info);
           matrix_print(output_info);
           matrix_print(ref_info);
+          assert(0);
           break;
         }
       }
@@ -149,6 +151,7 @@ int main()
           matrix_print(input_right_info);
           matrix_print(output_info);
           matrix_print(ref_info);
+          assert(0);
           break;
         }
       }
@@ -171,6 +174,7 @@ int main()
           matrix_print(input_right_info);
           matrix_print(output_info);
           matrix_print(ref_info);
+          assert(0);
           break;
         }
       }
@@ -193,6 +197,7 @@ int main()
           matrix_print(input_right_info);
           matrix_print(output_info);
           matrix_print(ref_info);
+          assert(0);
           break;
         }
       }
