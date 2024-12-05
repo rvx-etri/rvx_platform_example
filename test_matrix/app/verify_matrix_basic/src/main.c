@@ -1,46 +1,85 @@
 #include "platform_info.h"
 #include "ervp_printf.h"
+#include "ervp_printf_section.h"
 #include "ervp_variable_allocation.h"
-#include "ervp_matrix_op.h"
 #include "ervp_special_matrix_op.h"
+#include "ervp_matrix.h"
+#include "ervp_matrix_op.h"
+#include "ervp_matrix_op_sw.h"
 #include "ervp_core_id.h"
 #include "ervp_assert.h"
 
 #include "test_matrix.h"
 
+static inline void register_matrix_function()
+{
+  /* map your own functions */
+  //matrix_add_opt = matrix_add_sw;
+  //matrix_sub_opt = matrix_sub_sw;
+  //matrix_ewmult_opt = matrix_ewmult_sw;
+  //matrix_mult_opt = matrix_mult_sw;
+}
+
+static char hw_name[] = "SW";
+
+///////////////////////////////////////////////////////////////
+
 #define NUN_MATRIX 1
 #define TEST_MATRIX_SIZE 8
-#define RESULT_CHECK 1
 
-#define MATRIX_DATATYPE MATRIX_DATATYPE_SINT08
-//#define MATRIX_DATATYPE MATRIX_DATATYPE_FLOAT32
+#define VERIFY_ADD 1
+#define VERIFY_SUB 1
+#define VERIFY_EWMULT 1
+#define VERIFY_MULT 1
 
-#if (MATRIX_DATATYPE==MATRIX_DATATYPE_SINT08)
-typedef int8_t MTYPE;
+#define ML_DATATYPE MATRIX_DATATYPE_SINT08
+#define MR_DATATYPE MATRIX_DATATYPE_SINT08
+#define MO_DATATYPE MATRIX_DATATYPE_SINT08
+
+#if (GET_NUM_BITS(ML_DATATYPE)==32)
+typedef uint32_t ml_type_t;
+#elif (GET_NUM_BITS(ML_DATATYPE)==16)
+typedef uint16_t ml_type_t;
+#else
+typedef uint8_t ml_type_t;
 #endif
-#if (MATRIX_DATATYPE==MATRIX_DATATYPE_UINT08)
-typedef uint8_t MTYPE;
+
+#if (GET_NUM_BITS(MR_DATATYPE)==32)
+typedef uint32_t mr_type_t;
+#elif (GET_NUM_BITS(MR_DATATYPE)==16)
+typedef uint16_t mr_type_t;
+#else
+typedef uint8_t mr_type_t;
 #endif
-#if (MATRIX_DATATYPE==MATRIX_DATATYPE_FLOAT32)
-typedef float MTYPE;
+
+#if (GET_NUM_BITS(MO_DATATYPE)==32)
+typedef uint32_t mo_type_t;
+#elif (GET_NUM_BITS(MO_DATATYPE)==16)
+typedef uint16_t mo_type_t;
+#else
+typedef uint8_t mo_type_t;
 #endif
+
+#define SKIP_SIM 1
 
 #define ALIGNED_MATRIX __attribute__ ((aligned(0x1000)))
 
-MTYPE input_left_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
-MTYPE input_right_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
-MTYPE output_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
-MTYPE ref_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
+ml_type_t input_left_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
+mr_type_t input_right_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
+mo_type_t output_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
+mo_type_t ref_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
 
 ErvpMatrixInfo* input_left_info = NULL;
 ErvpMatrixInfo* input_right_info = NULL;
 ErvpMatrixInfo* output_info = NULL;
+ErvpMatrixInfo* ref_info = NULL;
 
 void matrix_info_init()
 {
-  input_left_info = matrix_generate_info(MATRIX_DATATYPE,TEST_MATRIX_SIZE,TEST_MATRIX_SIZE,NULL,NULL);
-  input_right_info = matrix_generate_info(MATRIX_DATATYPE,TEST_MATRIX_SIZE,TEST_MATRIX_SIZE,NULL,NULL);
-  output_info = matrix_generate_info(MATRIX_DATATYPE,TEST_MATRIX_SIZE,TEST_MATRIX_SIZE,NULL,NULL);
+  input_left_info = matrix_generate_info(ML_DATATYPE,TEST_MATRIX_SIZE,TEST_MATRIX_SIZE,NULL,NULL);
+  input_right_info = matrix_generate_info(MR_DATATYPE,TEST_MATRIX_SIZE,TEST_MATRIX_SIZE,NULL,NULL);
+  output_info = matrix_generate_info(MO_DATATYPE,TEST_MATRIX_SIZE,TEST_MATRIX_SIZE,NULL,NULL);
+  //ref_info = matrix_generate_info(MO_DATATYPE,TEST_MATRIX_SIZE,TEST_MATRIX_SIZE,NULL,NULL);
 }
 
 void matrix_info_setup(int index)
@@ -48,66 +87,133 @@ void matrix_info_setup(int index)
   input_left_info->addr = (void*)(input_left_array[index]);
   input_right_info->addr = (void*)(input_right_array[index]);
   output_info->addr = (void*)(output_array[index]);
+  //ref_info->addr = (void*)(ref_array[index]);
 }
 
 int main()
 {
   if(EXCLUSIVE_ID==0)
   {
+    int all_are_equal;
+
     // init
+    register_matrix_function();
     matrix_op_check();
     matrix_info_init();
-    for(int i=0; i<NUN_MATRIX; i=i+1)
+
+    // init matrices
+    for(int i=0; i<TEST_MATRIX_SIZE; i=i+1)
+      for(int j=0; j<TEST_MATRIX_SIZE; j=j+1)
+        input_left_array[0][i][j] = i + j;
+    for(int i=1; i<NUN_MATRIX; i=i+1)
     {
-      // init matrices
       matrix_info_setup(i);
       generate_test_matrix(input_left_info, i);
-      // add
-      matrix_zero_opt(input_right_info);
-      matrix_zero_opt(output_info);
-      matrix_add_opt(input_left_info, input_right_info, output_info, 0);
-      if(RESULT_CHECK)
+      //generate_test_matrix(input_right_info, i+1);
+    }
+    flush_cache();
+
+    //
+    if(VERIFY_ADD)
+    {
+      printf_section(SKIP_SIM, "%s_ADD", hw_name);
+      for(int i=0; i<NUN_MATRIX; i=i+1)
       {
-        int all_are_equal = matrix_compare(output_info, input_left_info, 1);
-        assert(all_are_equal);
-      }
-      // sub
-      matrix_zero_opt(input_right_info);
-      matrix_zero_opt(output_info);
-      matrix_sub_opt(input_left_info, input_right_info, output_info, 0);
-      if(RESULT_CHECK)
-      {
-        int all_are_equal = matrix_compare(output_info, input_left_info, 1);
-        assert(all_are_equal);
-      }
-      // ewmult
-      matrix_one_opt(input_right_info);
-      matrix_zero_opt(output_info);
-      matrix_ewmult_opt(input_left_info, input_right_info, output_info, 0);
-      if(RESULT_CHECK)
-      {
-        int all_are_equal = matrix_compare(output_info, input_left_info, 1);
-        assert(all_are_equal);
-      }
-      // scalar mult
-      matrix_one_opt(input_right_info);
-      matrix_zero_opt(output_info);
-      matrix_scalar_mult_fixed_opt(input_left_info, 1, output_info, 0);
-      if(RESULT_CHECK)
-      {
-        int all_are_equal = matrix_compare(output_info, input_left_info, 1);
-        assert(all_are_equal);
-      }
-      // mult
-      matrix_identity_opt(input_right_info);
-      matrix_zero_opt(output_info);
-      matrix_mult_opt(input_left_info, input_right_info, output_info, 0);
-      if(RESULT_CHECK)
-      {
-        int all_are_equal = matrix_compare(output_info, input_left_info, 1);
-        assert(all_are_equal);
+        flush_cache();
+        matrix_info_setup(i);
+        matrix_zero_sw(input_right_info);
+        matrix_zero_sw(output_info);
+        ref_info = input_left_info;
+        matrix_add_opt(input_left_info, input_right_info, output_info, 0);
+        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        if(!all_are_equal)
+        {
+          matrix_print(input_left_info);
+          matrix_print(input_right_info);
+          matrix_print(output_info);
+          matrix_print(ref_info);
+          assert(0);
+          break;
+        }
       }
     }
+    
+    //
+    if(VERIFY_SUB)
+    {
+      printf_section(SKIP_SIM, "%s_SUB", hw_name);
+      for(int i=0; i<NUN_MATRIX; i=i+1)
+      {
+        flush_cache();
+        matrix_info_setup(i);
+        matrix_zero_sw(input_right_info);
+        matrix_zero_sw(output_info);
+        ref_info = input_left_info;
+        matrix_sub_opt(input_left_info, input_right_info, output_info, 0);
+        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        if(!all_are_equal)
+        {
+          matrix_print(input_left_info);
+          matrix_print(input_right_info);
+          matrix_print(output_info);
+          matrix_print(ref_info);
+          assert(0);
+          break;
+        }
+      }
+    }
+    
+    //
+    if(VERIFY_EWMULT)
+    {
+      printf_section(SKIP_SIM, "%s_EWMULT", hw_name);
+      for(int i=0; i<NUN_MATRIX; i=i+1)
+      {
+        flush_cache();
+        matrix_info_setup(i);
+        matrix_one_sw(input_right_info);
+        matrix_zero_sw(output_info);
+        ref_info = input_left_info;
+        matrix_ewmult_opt(input_left_info, input_right_info, output_info, 0);
+        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        if(!all_are_equal)
+        {
+          matrix_print(input_left_info);
+          matrix_print(input_right_info);
+          matrix_print(output_info);
+          matrix_print(ref_info);
+          assert(0);
+          break;
+        }
+      }
+    }
+    
+    //
+    if(VERIFY_MULT)
+    {
+      printf_section(SKIP_SIM, "%s_MULT", hw_name);
+      for(int i=0; i<NUN_MATRIX; i=i+1)
+      {
+        flush_cache();
+        matrix_info_setup(i);
+        matrix_identity_sw(input_right_info);
+        matrix_zero_sw(output_info);
+        ref_info = input_left_info;
+        matrix_mult_opt(input_left_info, input_right_info, output_info, 0);
+        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        if(!all_are_equal)
+        {
+          matrix_print(input_left_info);
+          matrix_print(input_right_info);
+          matrix_print(output_info);
+          matrix_print(ref_info);
+          assert(0);
+          break;
+        }
+      }
+    }
+
+    flush_cache();
   }
   return 0;
 }

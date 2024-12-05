@@ -31,9 +31,9 @@
 // wire i_test_mmiox_rstnn;
 // wire [(64)-1:0] i_test_mmiox_rmx_core_config;
 // wire [(32)-1:0] i_test_mmiox_rmx_core_status;
-// wire i_test_mmiox_rmx_core_log_wready;
-// wire i_test_mmiox_rmx_core_log_wrequest;
-// wire [(32)-1:0] i_test_mmiox_rmx_core_log_wdata;
+// wire i_test_mmiox_rmx_log_fifo_wready;
+// wire i_test_mmiox_rmx_log_fifo_wrequest;
+// wire [(32)-1:0] i_test_mmiox_rmx_log_fifo_wdata;
 // wire i_test_mmiox_rmx_inst_fifo_rready;
 // wire [(62)-1:0] i_test_mmiox_rmx_inst_fifo_rdata;
 // wire i_test_mmiox_rmx_inst_fifo_rrequest;
@@ -52,6 +52,7 @@ reg inst_rrequest;
 wire [32-1:0] waddr;
 wire [08-1:0] wnum;
 wire [08-1:0] opcode;
+reg allows_transfer;
 
 /*
 USER_IP
@@ -68,9 +69,9 @@ i_test_mmiox
 	.rstnn(i_test_mmiox_rstnn),
 	.rmx_core_config(i_test_mmiox_rmx_core_config),
 	.rmx_core_status(i_test_mmiox_rmx_core_status),
-	.rmx_core_log_wready(i_test_mmiox_rmx_core_log_wready),
-	.rmx_core_log_wrequest(i_test_mmiox_rmx_core_log_wrequest),
-	.rmx_core_log_wdata(i_test_mmiox_rmx_core_log_wdata),
+	.rmx_log_fifo_wready(i_test_mmiox_rmx_log_fifo_wready),
+	.rmx_log_fifo_wrequest(i_test_mmiox_rmx_log_fifo_wrequest),
+	.rmx_log_fifo_wdata(i_test_mmiox_rmx_log_fifo_wdata),
 	.rmx_inst_fifo_rready(i_test_mmiox_rmx_inst_fifo_rready),
 	.rmx_inst_fifo_rdata(i_test_mmiox_rmx_inst_fifo_rdata),
 	.rmx_inst_fifo_rrequest(i_test_mmiox_rmx_inst_fifo_rrequest),
@@ -87,18 +88,18 @@ assign i_test_mmiox_clk = gclk_core;
 //assign `NOT_CONNECT = i_test_mmiox_rstnn;
 //assign `NOT_CONNECT = i_test_mmiox_rmx_core_config;
 assign i_test_mmiox_rmx_core_status = 32'h 010a;
-//assign `NOT_CONNECT = i_test_mmiox_rmx_core_log_wready;
-assign i_test_mmiox_rmx_core_log_wrequest = 0;
-assign i_test_mmiox_rmx_core_log_wdata = 0;
+//assign `NOT_CONNECT = i_test_mmiox_rmx_log_fifo_wready;
+assign i_test_mmiox_rmx_log_fifo_wrequest = inst_rrequest;
+assign i_test_mmiox_rmx_log_fifo_wdata = 32'h dddd;
 //assign `NOT_CONNECT = i_test_mmiox_rmx_inst_fifo_rready;
 //assign `NOT_CONNECT = i_test_mmiox_rmx_inst_fifo_rdata;
 assign i_test_mmiox_rmx_inst_fifo_rrequest = inst_rrequest;
 assign i_test_mmiox_rmx_operation_finish = inst_rrequest;
 //assign `NOT_CONNECT = i_test_mmiox_rmx_input_fifo_rready;
 //assign `NOT_CONNECT = i_test_mmiox_rmx_input_fifo_rdata;
-assign i_test_mmiox_rmx_input_fifo_rrequest = i_test_mmiox_rmx_input_fifo_rready;
+assign i_test_mmiox_rmx_input_fifo_rrequest = allows_transfer & i_test_mmiox_rmx_input_fifo_rready;
 //assign `NOT_CONNECT = i_test_mmiox_rmx_output_fifo_wready;
-assign i_test_mmiox_rmx_output_fifo_wrequest = i_test_mmiox_rmx_input_fifo_rready;
+assign i_test_mmiox_rmx_output_fifo_wrequest = allows_transfer & i_test_mmiox_rmx_input_fifo_rready;
 assign i_test_mmiox_rmx_output_fifo_wdata = i_test_mmiox_rmx_input_fifo_rdata;
 
 assign {opcode, wnum, waddr} = i_test_mmiox_rmx_inst_fifo_rdata;
@@ -107,6 +108,9 @@ assign {opcode, wnum, waddr} = i_test_mmiox_rmx_inst_fifo_rdata;
 initial
 begin
   inst_rrequest = 0;
+  allows_transfer = 0;
+
+  //
   wait(i_test_mmiox_rmx_inst_fifo_rready==1);
   wait(i_test_mmiox_clk==1);
   #1
@@ -118,13 +122,39 @@ begin
   inst_rrequest = 0;
   wait(i_test_mmiox_clk==0);
   wait(i_test_mmiox_clk==1);
+
+  //
   wait(i_test_mmiox_rmx_inst_fifo_rready==1);
   wait(i_test_mmiox_clk==1);
-  
   #1
   $display("0x%x %d %d", waddr, wnum, opcode);
+  inst_rrequest = 1;
+  wait(i_test_mmiox_clk==0);
+  wait(i_test_mmiox_clk==1);
+  #1
+  inst_rrequest = 0;
+  wait(i_test_mmiox_clk==0);
+  wait(i_test_mmiox_clk==1);
+
+  //
+  wait(i_test_mmiox_rmx_inst_fifo_rready==1);
+  wait(i_test_mmiox_clk==1);
+  #1
+  $display("0x%x %d %d", waddr, wnum, opcode);
+  inst_rrequest = 1;
+  wait(i_test_mmiox_clk==0);
+  wait(i_test_mmiox_clk==1);
+  #1
+  inst_rrequest = 0;
+  wait(i_test_mmiox_clk==0);
+  wait(i_test_mmiox_clk==1);
+
+  //
+  #1
+  allows_transfer = 1;
 end
 
+/*
 initial
 begin
   wait(inst_rrequest==1);
@@ -135,3 +165,4 @@ begin
   wait(i_platform.i_rtl.i_test_mmiox_no_name_apb2mmiox_interrupt_list==0);
   $display("Interrupt Clears");
 end
+*/

@@ -28,7 +28,11 @@
       </parameter>
       <parameter>
         <id>LOG_FIFO_DEPTH</id>
-        <value>0</value>
+        <value>2</value>
+      </parameter>
+      <parameter>
+        <id>INPUT_FIFO_DEPTH</id>
+        <value>5</value>
       </parameter>
       <parameter>
         <id>BW_CONFIG</id>
