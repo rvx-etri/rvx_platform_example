@@ -31,5 +31,9 @@
       <check_vta>True</check_vta>
     </sw_define>
 
+    <sim_define>
+      <record_top>"depth=20",i_platform.i_rtl.i_main_core,"depth=20",i_platform.i_rtl.i_vta00</record_top>
+    </sim_define>
+
 	</platform>
 </rvx>

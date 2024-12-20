@@ -17,7 +17,7 @@
 
     <ip_instance>
 			<name>i_test_mmiox</name>
-      <library_name>user_mmiox</library_name>
+      <library_name>user_mmiox1</library_name>
       <parameter>
         <id>BW_INST</id>
         <value>62</value>

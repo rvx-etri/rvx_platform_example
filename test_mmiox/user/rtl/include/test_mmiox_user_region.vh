@@ -31,6 +31,8 @@
 // wire i_test_mmiox_rstnn;
 // wire [(64)-1:0] i_test_mmiox_rmx_core_config;
 // wire [(32)-1:0] i_test_mmiox_rmx_core_status;
+// wire i_test_mmiox_rmx_clear_request;
+// wire i_test_mmiox_rmx_clear_finish;
 // wire i_test_mmiox_rmx_log_fifo_wready;
 // wire i_test_mmiox_rmx_log_fifo_wrequest;
 // wire [(32)-1:0] i_test_mmiox_rmx_log_fifo_wdata;
@@ -69,6 +71,8 @@ i_test_mmiox
 	.rstnn(i_test_mmiox_rstnn),
 	.rmx_core_config(i_test_mmiox_rmx_core_config),
 	.rmx_core_status(i_test_mmiox_rmx_core_status),
+	.rmx_clear_request(i_test_mmiox_rmx_clear_request),
+	.rmx_clear_finish(i_test_mmiox_rmx_clear_finish),
 	.rmx_log_fifo_wready(i_test_mmiox_rmx_log_fifo_wready),
 	.rmx_log_fifo_wrequest(i_test_mmiox_rmx_log_fifo_wrequest),
 	.rmx_log_fifo_wdata(i_test_mmiox_rmx_log_fifo_wdata),
@@ -89,6 +93,7 @@ assign i_test_mmiox_clk = gclk_core;
 //assign `NOT_CONNECT = i_test_mmiox_rmx_core_config;
 assign i_test_mmiox_rmx_core_status = 32'h 010a;
 //assign `NOT_CONNECT = i_test_mmiox_rmx_log_fifo_wready;
+assign i_test_mmiox_rmx_clear_finish = i_test_mmiox_rmx_clear_request;
 assign i_test_mmiox_rmx_log_fifo_wrequest = inst_rrequest;
 assign i_test_mmiox_rmx_log_fifo_wdata = 32'h dddd;
 //assign `NOT_CONNECT = i_test_mmiox_rmx_inst_fifo_rready;
