@@ -38,16 +38,18 @@ $(addsuffix .base, ${UTIL_LIST}):%.base:
 		cp -f ${RVX_ENV}/util/gitignore.$(*).txt ${CURDIR}/$(*)/.gitignore; \
 	fi
 
-${UTIL_LIST}:%: %.base
+${UTIL_LIST}:%: FORCE %.base
 
 clean: $(addsuffix .clean, ${UTIL_LIST})
 
 $(addsuffix .clean, ${UTIL_LIST}):%.clean:
 	@if [ -d $(*) ]; \
 	then \
-		cd $(*) && make clean; \
+		cd $(*) && make --no-print-directory clean; \
 	fi
 
 -include ./user_util.mh
 
-.PHONY: ${UTIL_LIST}
+FORCE:
+
+.PHONY: FORCE clean

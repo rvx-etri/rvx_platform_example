@@ -34,11 +34,8 @@ void matrix_info_init()
 
 int main()
 {
-  // init
-  matrix_op_register_sw();
-  matrix_op_check();
   matrix_info_init();
-  matrix_identity_opt(matrix_ref2_info);
+  matrix_identity_sw(matrix_ref2_info);
   //
   printf_section(SKIP_SIM, "subbyte matrix print");
   matrix_print_hex(matrix_ref0_info);
@@ -51,8 +48,8 @@ int main()
 
   //
   printf_section(SKIP_SIM, "subbyte matrix test 0");
-  matrix_test_info = matrix_generate_info(MATRIX_DATATYPE_UINT01,MATRIX_SIZE,MATRIX_SIZE,matrix_test,matrix_test_info);
-  matrix_identity_opt(matrix_test_info);
+  matrix_test_info = matrix_generate_info(MATRIX_DATATYPE_UINT01,MATRIX_SIZE,MATRIX_SIZE,matrix_test,NULL);
+  matrix_identity_sw(matrix_test_info);
   if(!is_sim())
   {
     matrix_print(matrix_test_info);
@@ -62,8 +59,8 @@ int main()
 
   //
   printf_section(SKIP_SIM, "subbyte matrix test 1");
-  matrix_test_info = matrix_generate_info(MATRIX_DATATYPE_SINT02,MATRIX_SIZE,MATRIX_SIZE,matrix_test,matrix_test_info);
-  matrix_identity_opt(matrix_test_info);
+  matrix_test_info = matrix_generate_info(MATRIX_DATATYPE_SINT02,MATRIX_SIZE,MATRIX_SIZE,matrix_test,NULL);
+  matrix_identity_sw(matrix_test_info);
   if(!is_sim())
   {
     matrix_print(matrix_test_info);
@@ -73,8 +70,8 @@ int main()
 
   //
   printf_section(SKIP_SIM, "subbyte matrix test 2");
-  matrix_test_info = matrix_generate_info(MATRIX_DATATYPE_UINT04,MATRIX_SIZE,MATRIX_SIZE,matrix_test,matrix_test_info);
-  matrix_identity_opt(matrix_test_info);
+  matrix_test_info = matrix_generate_info(MATRIX_DATATYPE_UINT04,MATRIX_SIZE,MATRIX_SIZE,matrix_test,NULL);
+  matrix_identity_sw(matrix_test_info);
   if(!is_sim())
   {
     matrix_print(matrix_test_info);
@@ -84,7 +81,7 @@ int main()
 
   //
   printf_section(SKIP_SIM, "subbyte matrix test 3");
-  matrix_test_info = matrix_generate_info(MATRIX_DATATYPE_UINT08,MATRIX_SIZE,MATRIX_SIZE,matrix_test,matrix_test_info);
+  matrix_test_info = matrix_generate_info(MATRIX_DATATYPE_UINT08,MATRIX_SIZE,MATRIX_SIZE,matrix_test,NULL);
   for(int i=0; i<MATRIX_SIZE; i++)
     for(int j=0; j<MATRIX_SIZE; j++)
       matrix_write_fixed_element(matrix_test_info, i, j, i+j+1);

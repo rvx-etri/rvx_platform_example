@@ -4,20 +4,19 @@
 #include "ervp_variable_allocation.h"
 #include "ervp_special_matrix_op.h"
 #include "ervp_matrix.h"
-#include "ervp_matrix_op.h"
 #include "ervp_matrix_op_sw.h"
 #include "ervp_core_id.h"
 #include "ervp_assert.h"
 
 #include "test_matrix.h"
 
-static inline void register_matrix_function()
+static inline void register_matrix_function(ervp_mop_mapping_t* mop_mapping)
 {
   /* map your own functions */
-  //matrix_add_opt = matrix_add_sw;
-  //matrix_sub_opt = matrix_sub_sw;
-  //matrix_ewmult_opt = matrix_ewmult_sw;
-  //matrix_mult_opt = matrix_mult_sw;
+  //mop_mapping->matrix_add = matrix_add_sw;
+  //mop_mapping->matrix_sub = matrix_sub_sw;
+  //mop_mapping->matrix_ewmult = matrix_ewmult_sw;
+  //mop_mapping->matrix_mult = matrix_mult_sw;
 }
 
 static char hw_name[] = "SW";
@@ -94,11 +93,8 @@ int main()
 {
   if(EXCLUSIVE_ID==0)
   {
-    int all_are_equal;
-
-    // init
-    register_matrix_function();
-    matrix_op_check();
+    ervp_mop_mapping_t* mop_mapping = matrix_op_mapping_alloc();
+    register_matrix_function(mop_mapping);
     matrix_info_init();
 
     // init matrices
@@ -124,8 +120,8 @@ int main()
         matrix_zero_sw(input_right_info);
         matrix_zero_sw(output_info);
         ref_info = input_left_info;
-        matrix_add_opt(input_left_info, input_right_info, output_info, 0);
-        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        mop_mapping->matrix_add(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {
           matrix_print(input_left_info);
@@ -149,8 +145,8 @@ int main()
         matrix_zero_sw(input_right_info);
         matrix_zero_sw(output_info);
         ref_info = input_left_info;
-        matrix_sub_opt(input_left_info, input_right_info, output_info, 0);
-        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        mop_mapping->matrix_sub(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {
           matrix_print(input_left_info);
@@ -174,8 +170,8 @@ int main()
         matrix_one_sw(input_right_info);
         matrix_zero_sw(output_info);
         ref_info = input_left_info;
-        matrix_ewmult_opt(input_left_info, input_right_info, output_info, 0);
-        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        mop_mapping->matrix_ewmult(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {
           matrix_print(input_left_info);
@@ -199,8 +195,8 @@ int main()
         matrix_identity_sw(input_right_info);
         matrix_zero_sw(output_info);
         ref_info = input_left_info;
-        matrix_mult_opt(input_left_info, input_right_info, output_info, 0);
-        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        mop_mapping->matrix_mult(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {
           matrix_print(input_left_info);

@@ -12,7 +12,7 @@ void parse_neuron(texpar_list_t *option_list);
 void parse_network_cfg(char *filename)
 {
   texpar_list_t *section_list = texpar_read_file_with_section(filename);
-  texpar_node_t *n = section_list->front;
+  texpar_iter_t *n = section_list->front;
   if(!n) {
     printf("Config file has no section_list");
     return;
@@ -28,7 +28,7 @@ void parse_network_cfg(char *filename)
   parse_net_option_list(option_list);
 
   /* layers info parsing */
-  n = n->next;  // next texpar_section_t texpar_node_t
+  n = n->next;  // next texpar_section_t texpar_iter_t
   int count = 0;
   texpar_free_section(s);
   while(n){

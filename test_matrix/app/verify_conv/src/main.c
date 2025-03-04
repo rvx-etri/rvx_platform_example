@@ -23,12 +23,18 @@ ErvpMatrixInfo* kernel_info = NULL;
 ErvpMatrixInfo* output_info = NULL;
 ErvpMatrixInfo* ref_info = NULL;
 
+static inline void register_matrix_function(ervp_mop_mapping_t* mop_mapping)
+{
+  mop_mapping->matrix_conv = matrix_conv2mult_v1;
+}
+
 int main()
 {
   if(EXCLUSIVE_ID==0)
   {
-    int all_are_equal;
-    matrix_op_check();
+    ervp_mop_mapping_t* mop_mapping = matrix_op_mapping_alloc();
+    register_matrix_function(mop_mapping);
+
     printf_section(1, "CONV");
 
     ervp_mconv_option_t conv_option;
@@ -39,10 +45,8 @@ int main()
 
     input_info = matrix_alloc(MATRIX_DATATYPE, INPUT_MATRIX_SIZE, INPUT_MATRIX_SIZE, NULL);
     kernel_info = matrix_alloc(MATRIX_DATATYPE, KERNEL_MATRIX_SIZE, KERNEL_MATRIX_SIZE, NULL);
-    output_info = matrix_alloc_conv_output(input_info, kernel_info, conv_option.value);
-    ref_info = matrix_alloc_conv_output(input_info, kernel_info, conv_option.value);
-
-    matrix_conv_opt = matrix_conv_by_mult;
+    output_info = matrix_conv_alloc_output(input_info, kernel_info, conv_option.value);
+    ref_info = matrix_conv_alloc_output(input_info, kernel_info, conv_option.value);
 
     for(int i=0; i<NUN_MATRIX; i=i+1)
     {
@@ -52,7 +56,7 @@ int main()
       // generate kernal and ref
       if(KERNEL_MATRIX_SIZE==1)
       {
-        matrix_one_opt(kernel_info);
+        matrix_one_sw(kernel_info);
         ref_info = input_info;
       }
       else
@@ -61,11 +65,11 @@ int main()
         matrix_conv_sw(input_info, kernel_info, ref_info, conv_option.value);
       }
 
-      matrix_conv_opt(input_info, kernel_info, output_info, conv_option.value);
+      mop_mapping->matrix_conv(mop_mapping, input_info, kernel_info, output_info, conv_option.value);
       
       if(RESULT_CHECK)
       {
-        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {
           matrix_print(input_info);

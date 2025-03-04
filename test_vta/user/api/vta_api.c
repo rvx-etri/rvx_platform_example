@@ -7,7 +7,7 @@
 #include "ervp_variable_allocation.h"
 #include "ervp_mmio_util.h"
 #include "ervp_matrix.h"
-#include "ervp_matrix_op.h"
+#include "ervp_matrix_op_sw.h"
 #include "ervp_special_matrix_op.h"
 #include "ervp_matrix_datatype_define.h"
 #include "ervp_assert.h"
@@ -119,7 +119,7 @@ static void __attribute__ ((constructor)) construct_vta()
   setup_vta_var();
 }
 
-void matrix_mult_vta_16x16(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, ErvpMatrixInfo* c, int options)
+void matrix_mult_vta_16x16(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
 {
   assert(a->num_row == 16);
   assert(a->num_col == 16);
@@ -137,8 +137,8 @@ void matrix_mult_vta_16x16(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, Erv
   ErvpMatrixInfo *right_info = &right_buffer_info;
   ErvpMatrixInfo *output_info = &output_buffer_info;
 
-  matrix_copy_opt(a, left_info, 0);
-  matrix_transpose_opt(b, right_info, 0);
+  matrix_copy_sw(a, left_info, 0);
+  matrix_transpose_sw(b, right_info, 0);
 #ifdef CACHING_ALL
   flush_cache();
 #endif
@@ -168,11 +168,11 @@ void matrix_mult_vta_16x16(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, Erv
     }
   }
 
-  matrix_copy_opt(output_info, c, options);
+  matrix_copy_sw(output_info, c, options);
   flush_cache();
 }
 
-void matrix_mult_vta(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, ErvpMatrixInfo* c, int options)
+void matrix_mult_vta(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
 {
   assert(a->num_row<= 16);
   assert(a->num_col<= 16);
@@ -183,9 +183,9 @@ void matrix_mult_vta(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, ErvpMatri
   ErvpMatrixInfo *right_info = &right_buffer_info;
   ErvpMatrixInfo *output_info = &output_buffer_info;
   
-  matrix_zero_opt(left_info);
-  matrix_copy_part_opt(a, left_info, a->num_row, a->num_col, 0);
-  matrix_zero_opt(right_info);
+  matrix_zero_sw(left_info);
+  matrix_copy_part_sw(a, left_info, a->num_row, a->num_col, 0);
+  matrix_zero_sw(right_info);
   matrix_transpose_part_sw(b, right_info, b->num_row, b->num_col, 0);
 #ifdef CACHING_ALL
   flush_cache();
@@ -215,5 +215,5 @@ void matrix_mult_vta(const ErvpMatrixInfo* a, const ErvpMatrixInfo* b, ErvpMatri
     }
   }
 
-  matrix_copy_part_opt(output_info, c, c->num_row, c->num_col, options);
+  matrix_copy_part_sw(output_info, c, c->num_row, c->num_col, options);
 }

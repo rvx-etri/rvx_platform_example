@@ -56,9 +56,8 @@ ENGINE_WS=${PLATFORM_DIR}/..
 ENGINE_TARGET=platform
 ENGINE_USER_CMD_LIST=clean syn sim_rtl imp_fpga clean_all_imp app_list fpga_list
 ENGINE_USER_CMD_ADV_LIST=user util freeze unfreeze
-ENGINE_SYSTEM_CMD_LIST=testbench app_base system_app distclean syn_arch sim_vp sim_rtl_syn imp_fpga_dir gui imp_soc wifi_config aix_config
+ENGINE_SYSTEM_CMD_LIST=testbench app_base system_app distclean syn_arch sim_vp sim_rtl_syn imp_fpga_dir gui imp_chip wifi_config aix_config
 ENGINE_PARA= -p ${PLATFORM_NAME}
-
 ifdef TARGET_IMP_CLASS
 ENGINE_PARA+= -tic ${TARGET_IMP_CLASS}
 endif
@@ -73,7 +72,7 @@ ifdef IMP_INSTANCE_DIR
 ENGINE_PARA+= -imp_dir ${IMP_INSTANCE_DIR}
 endif
 
-MAKEFILE_USER_CMD_LIST=test verify
+MAKEFILE_USER_CMD_LIST=test verify edit
 MAKEFILE_USER_CMD_ADV_LIST=
 include ${RVX_ENV}/engine/rvx_make2engine.mh
 
@@ -99,8 +98,20 @@ ${FPGA_LIST}:
 fpga: imp_fpga
 
 ########
+# chip #
+########
+
+CHIP_LIST = $(shell ${PYTHON3_CMD} ${RVX_UTIL_HOME}/os_util.py dir_list ${ENGINE_WS}/../hwlib_chip )
+
+${CHIP_LIST}:
+	@make imp_chip TARGET_IMP_CLASS=$@
+
+########
 # test #
 ########
+
+edit:
+	@vim ${PLATFORM_XML_FILE}
 
 test: test_rtl_app
 

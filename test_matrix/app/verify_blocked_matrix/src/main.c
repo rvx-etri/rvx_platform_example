@@ -5,8 +5,8 @@
 #include "ervp_special_matrix_op.h"
 #include "core_dependent.h"
 #include "ervp_matrix.h"
-#include "ervp_matrix_op.h"
 #include "ervp_matrix_op_sw.h"
+#include "ervp_blocked_matrix_op.h"
 #include "ervp_core_id.h"
 #include "ervp_assert.h"
 
@@ -16,13 +16,12 @@
 
 #define BLOCK_SIZE 4
 
-static inline void register_matrix_function()
+static inline void register_matrix_function(ervp_mop_mapping_t* mop_mapping)
 {
-  matrix_op_register_blocked(BLOCK_SIZE);
-  submatrix_mult_opt = NULL_FTN_POINTER;
-  submatrix_mac_opt = matrix_mac_sw;
-  //submatrix_mult_opt = matrix_mult_sw;
-  //submatrix_mac_opt = NULL_FTN_POINTER;
+  ervp_blocked_matrix_info_t* blocked_info = blocked_matrix_info_alloc();
+  blocked_info->block_size = BLOCK_SIZE;
+  blocked_info->subop_mapping = matrix_op_mapping_alloc();
+  matrix_op_register_blocked_global(mop_mapping, blocked_info);
 }
 
 static char hw_name[] = "BLOCKED_SW";
@@ -99,11 +98,8 @@ int main()
 {
   if(EXCLUSIVE_ID==0)
   {
-    int all_are_equal;
-
-    // init
-    register_matrix_function();
-    matrix_op_check();
+    ervp_mop_mapping_t* mop_mapping = matrix_op_mapping_alloc();
+    register_matrix_function(mop_mapping);
     matrix_info_init();
 
     // init matrices
@@ -124,8 +120,8 @@ int main()
         flush_cache();
         matrix_info_setup(i);
         matrix_add_sw(input_left_info, input_right_info, ref_info, 0);
-        matrix_add_opt(input_left_info, input_right_info, output_info, 0);
-        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        mop_mapping->matrix_add(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {
           matrix_print(input_left_info);
@@ -147,8 +143,8 @@ int main()
         flush_cache();
         matrix_info_setup(i);
         matrix_sub_sw(input_left_info, input_right_info, ref_info, 0);
-        matrix_sub_opt(input_left_info, input_right_info, output_info, 0);
-        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        mop_mapping->matrix_sub(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {
           matrix_print(input_left_info);
@@ -170,8 +166,8 @@ int main()
         flush_cache();
         matrix_info_setup(i);
         matrix_ewmult_sw(input_left_info, input_right_info, ref_info, 0);
-        matrix_ewmult_opt(input_left_info, input_right_info, output_info, 0);
-        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        mop_mapping->matrix_ewmult(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {
           matrix_print(input_left_info);
@@ -193,8 +189,8 @@ int main()
         flush_cache();
         matrix_info_setup(i);
         matrix_mult_sw(input_left_info, input_right_info, ref_info, 0);
-        matrix_mult_opt(input_left_info, input_right_info, output_info, 0);
-        all_are_equal = matrix_compare(output_info, ref_info, 1);
+        mop_mapping->matrix_mult(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {
           matrix_print(input_left_info);

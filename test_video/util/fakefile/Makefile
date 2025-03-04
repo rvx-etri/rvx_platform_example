@@ -38,19 +38,19 @@ PLATFORM_DIR = $(call absolute_path,${CURDIR}/../..)
 USER_DIR = ${PLATFORM_DIR}/user
 API_DIR = ${USER_DIR}/api
 TARGET_DIR=${CURDIR}/target
+RESULT_DIR=${USER_DIR}/api
 
 clean:
-	-@rm -rf *.c *.h
+	@true
 
-convert: clean
-	${PYTHON3_CMD} ${RVX_ENV}/util/convert_file.py -i ${FILE_LIST} -o ${CURDIR} -r ${ROM_NAME}
+convert:
+	${PYTHON3_CMD} ${RVX_ENV}/util/convert_file.py -i ${FILE_LIST} -o ${RESULT_DIR} -r ${ROM_NAME}
 
 user_clean:
-	-cd ${API_DIR} && rm -rf *_file.*
+	cd ${API_DIR} && rm -rf *_file.*
 
-user: user_clean
-	cd ${PLATFORM_DIR} && make user
-	-@cp -f *.c *.h ${API_DIR}
+user_gen:
+	@cd ${PLATFORM_DIR} && make user
 
 add:
 	mkdir -p target
@@ -59,6 +59,8 @@ add:
 remove:
 	-cd ${TARGET_DIR} && rm -rf ${REMOVE_FILE_LIST}
 
-all: convert user
+all: user_gen user_clean convert
 
-.PHONY:
+FORCE:
+
+.PHONY: FORCE clean

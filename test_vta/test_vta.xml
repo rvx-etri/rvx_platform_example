@@ -9,7 +9,7 @@
 				<value>64kB</value>
 			</define>
 			<define>
-				<name>include_fast_dram</name>
+				<name>include_slow_dram</name>
 				<value type="bool">True</value>
 			</define>
 			<define>
