@@ -9,19 +9,9 @@
 #include "ervp_assert.h"
 
 #include "test_matrix.h"
+#include "map_your_matrix_hw.h"
 
 // this app is modified from "verify_matrix_opt"
-
-static inline void register_matrix_function(ervp_mop_mapping_t* mop_mapping)
-{
-  /* map your own functions */
-  //mop_mapping->matrix_add = matrix_add_sw;
-  //mop_mapping->matrix_sub = matrix_sub_sw;
-  //mop_mapping->matrix_ewmult = matrix_ewmult_sw;
-  //mop_mapping->matrix_mult = matrix_mult_sw;
-}
-
-static char hw_name[] = "SW";
 
 ///////////////////////////////////////////////////////////////
 
@@ -32,6 +22,7 @@ static char hw_name[] = "SW";
 #define VERIFY_SUB 1
 #define VERIFY_EWMULT 1
 #define VERIFY_MULT 1
+#define VERIFY_SCALAR_MULT 1
 
 #define ML_DATATYPE MATRIX_DATATYPE_SINT08
 #define MR_DATATYPE MATRIX_DATATYPE_SINT08
@@ -95,8 +86,9 @@ int main()
 {
   if(EXCLUSIVE_ID==0)
   {
+    ervp_mop_wait_fx_t mop_wait_fx;
     ervp_mop_mapping_t* mop_mapping = matrix_op_mapping_alloc();
-    register_matrix_function(mop_mapping);
+    map_your_matrix_function(mop_mapping);
     matrix_info_init();
 
     // init matrices
@@ -111,13 +103,14 @@ int main()
     //
     if(VERIFY_ADD)
     {
-      printf_section(SKIP_SIM, "%s_ADD", hw_name);
+      printf_section(SKIP_SIM, "%s_ADD", matrix_hw_name);
       for(int i=0; i<NUN_MATRIX; i=i+1)
       {
         flush_cache();
         matrix_info_setup(i);
         matrix_add_sw(input_left_info, input_right_info, ref_info, 0);
-        mop_mapping->matrix_add(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        mop_wait_fx = mop_mapping->matrix_add(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        matrix_wait_finish(mop_wait_fx);
         int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {
@@ -134,13 +127,14 @@ int main()
     //
     if(VERIFY_SUB)
     {
-      printf_section(SKIP_SIM, "%s_SUB", hw_name);
+      printf_section(SKIP_SIM, "%s_SUB", matrix_hw_name);
       for(int i=0; i<NUN_MATRIX; i=i+1)
       {
         flush_cache();
         matrix_info_setup(i);
         matrix_sub_sw(input_left_info, input_right_info, ref_info, 0);
-        mop_mapping->matrix_sub(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        mop_wait_fx = mop_mapping->matrix_sub(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        matrix_wait_finish(mop_wait_fx);
         int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {
@@ -157,13 +151,14 @@ int main()
     //
     if(VERIFY_EWMULT)
     {
-      printf_section(SKIP_SIM, "%s_EWMULT", hw_name);
+      printf_section(SKIP_SIM, "%s_EWMULT", matrix_hw_name);
       for(int i=0; i<NUN_MATRIX; i=i+1)
       {
         flush_cache();
         matrix_info_setup(i);
         matrix_ewmult_sw(input_left_info, input_right_info, ref_info, 0);
-        mop_mapping->matrix_ewmult(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        mop_wait_fx = mop_mapping->matrix_ewmult(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        matrix_wait_finish(mop_wait_fx);
         int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {
@@ -180,13 +175,38 @@ int main()
     //
     if(VERIFY_MULT)
     {
-      printf_section(SKIP_SIM, "%s_MULT", hw_name);
+      printf_section(SKIP_SIM, "%s_MULT", matrix_hw_name);
       for(int i=0; i<NUN_MATRIX; i=i+1)
       {
         flush_cache();
         matrix_info_setup(i);
         matrix_mult_sw(input_left_info, input_right_info, ref_info, 0);
-        mop_mapping->matrix_mult(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        mop_wait_fx = mop_mapping->matrix_mult(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        matrix_wait_finish(mop_wait_fx);
+        int all_are_equal = matrix_compare(output_info, ref_info, 1);
+        if(!all_are_equal)
+        {
+          matrix_print(input_left_info);
+          matrix_print(input_right_info);
+          matrix_print(output_info);
+          matrix_print(ref_info);
+          assert(0);
+          break;
+        }
+      }
+    }
+
+    //
+    if(VERIFY_SCALAR_MULT)
+    {
+      printf_section(SKIP_SIM, "%s_SCALAR_MULT", matrix_hw_name);
+      for(int i=0; i<NUN_MATRIX; i=i+1)
+      {
+        flush_cache();
+        matrix_info_setup(i);
+        matrix_scalar_mult_fixed_sw(input_left_info, 1, ref_info, 0);
+        mop_wait_fx = mop_mapping->matrix_scalar_mult_fixed(mop_mapping, input_left_info, 1, output_info, 0);
+        matrix_wait_finish(mop_wait_fx);
         int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {

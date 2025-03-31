@@ -29,7 +29,14 @@
 
     <sw_define>
       <check_vta>True</check_vta>
-    </sw_define>
+		</sw_define>
+
+		<clock_info>
+      <define>
+        <name>clk_system</name>
+        <value type="dec">100000000</value>
+      </define>
+    </clock_info>
 
     <sim_define>
       <record_top>"depth=20",i_platform.i_rtl.i_main_core,"depth=20",i_platform.i_rtl.i_vta00</record_top>

@@ -119,7 +119,7 @@ static void __attribute__ ((constructor)) construct_vta()
   setup_vta_var();
 }
 
-void matrix_mult_vta_16x16(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
+ervp_mop_wait_fx_t matrix_mult_vta_16x16(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
 {
   assert(a->num_row == 16);
   assert(a->num_col == 16);
@@ -170,9 +170,10 @@ void matrix_mult_vta_16x16(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo
 
   matrix_copy_sw(output_info, c, options);
   flush_cache();
+  return NULL;
 }
 
-void matrix_mult_vta(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
+ervp_mop_wait_fx_t matrix_mult_vta(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
 {
   assert(a->num_row<= 16);
   assert(a->num_col<= 16);
@@ -216,4 +217,5 @@ void matrix_mult_vta(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *a, c
   }
 
   matrix_copy_part_sw(output_info, c, c->num_row, c->num_col, options);
+  return NULL;
 }
