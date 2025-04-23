@@ -85,7 +85,8 @@ module GenVMECmd_1(
   wire [15:0] _GEN_11 = io_isBusy & (currentRowIdx < _GEN_37 | stride) ? _rdCmdStartIdx_T_3 : {{6'd0}, rdCmdStartIdx}; // @[TensorLoadNarrowVME.scala 656:68 TensorLoadNarrowVME.scala 657:19 TensorLoadNarrowVME.scala 586:26]
   wire [15:0] _GEN_14 = io_start ? _rdCmdStartIdx_T_1 : _GEN_11; // @[TensorLoadNarrowVME.scala 653:19 TensorLoadNarrowVME.scala 655:19]
   wire  startIssueCmdRead = blocksReadNb == 23'h0 & rdCmdStartIdxValid; // @[TensorLoadNarrowVME.scala 661:29]
-  wire [25:0] _memRow_T = {dec_xstride, 10'h0}; // @[TensorLoadNarrowVME.scala 672:56]
+  //wire [25:0] _memRow_T = {dec_xstride, 10'h0}; // @[TensorLoadNarrowVME.scala 672:56]
+  wire [25:0] _memRow_T = {10'h0, dec_xstride}; // @[TensorLoadNarrowVME.scala 672:56] // set stride in bytes by hujang
   wire [31:0] _GEN_43 = {{6'd0}, _memRow_T}; // @[TensorLoadNarrowVME.scala 672:41]
   wire [31:0] memRow = rdCmdExtAddrRowBegin + _GEN_43; // @[TensorLoadNarrowVME.scala 672:41]
   wire [11:0] _rdCmdExtAddr_T = {readLen, 3'h0}; // @[TensorLoadNarrowVME.scala 679:47]
@@ -251,3 +252,4 @@ end // initial
 `endif
 `endif // SYNTHESIS
 endmodule
+

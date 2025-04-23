@@ -66,7 +66,7 @@ uint32_t uops[] NOTCACHED_DATA VTA_DATA = {
   0x0000700e,
   0x0000780f};
 
-int vta_status(void)
+static int vta_status(void)
 {
   return REG32(XVTA_CONTROL_ADDR_AP_CTRL);
 }

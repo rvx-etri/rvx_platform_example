@@ -159,7 +159,8 @@ module TensorStoreNarrowVME(
   reg [7:0] tag; // @[TensorStoreNarrowVME.scala 71:20]
   reg [7:0] set; // @[TensorStoreNarrowVME.scala 72:20]
   reg [31:0] xfer_bytes; // @[TensorStoreNarrowVME.scala 74:23]
-  wire [19:0] xstride_bytes = {dec_xstride, 4'h0}; // @[TensorStoreNarrowVME.scala 75:35]
+  //wire [19:0] xstride_bytes = {dec_xstride, 4'h0}; // @[TensorStoreNarrowVME.scala 75:35]
+  wire [19:0] xstride_bytes = {4'h0, dec_xstride}; // @[TensorStoreNarrowVME.scala 75:35] // set stride in bytes by hujang
   wire [37:0] _xfer_init_addr_T = {dec_dram_offset, 6'h0}; // @[TensorStoreNarrowVME.scala 80:66]
   wire [37:0] _xfer_init_addr_T_1 = 38'hffffffff & _xfer_init_addr_T; // @[TensorStoreNarrowVME.scala 80:47]
   wire [37:0] _GEN_116 = {{6'd0}, io_baddr}; // @[TensorStoreNarrowVME.scala 80:33]
@@ -728,3 +729,4 @@ end // initial
 `endif
 `endif // SYNTHESIS
 endmodule
+
