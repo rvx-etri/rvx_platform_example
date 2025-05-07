@@ -950,8 +950,8 @@ void printVTADebug(VTAGenericInsn *insn_buf, int ins_size, VTAUop * uop_buf, int
   printf("\n");
   #endif
 
-  //printMicroOp(uop_size, uop_buf);
-  #if 0
+  printMicroOp(uop_size, uop_buf);
+  #if 1
   uint32_t *uop_buf_in32 = (uint32_t *)uop_buf;
   for(int i=0; i<uop_size; i++)
   {

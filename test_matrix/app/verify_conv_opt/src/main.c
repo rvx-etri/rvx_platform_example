@@ -40,7 +40,6 @@ int main()
 
     ervp_mconv_option_t conv_option;
     conv_option.value = 0;
-    conv_option.br.rshift = 1;
 
     input_info = matrix_alloc(MATRIX_DATATYPE, INPUT_MATRIX_SIZE, INPUT_MATRIX_SIZE, NULL);
     kernel_info = matrix_alloc(MATRIX_DATATYPE, KERNEL_MATRIX_SIZE, KERNEL_MATRIX_SIZE, NULL);

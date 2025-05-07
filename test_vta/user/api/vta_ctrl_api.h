@@ -9,6 +9,7 @@
 int vta_status(const vta_hwinfo_t *const hwinfo);
 void vta_ctrl_wait(const vta_hwinfo_t *const hwinfo);
 void vta_ctrl_write(const vta_hwinfo_t *const hwinfo, unsigned int value);
-void vta_setup_register(const vta_hwinfo_t *const hwinfo, int ins_size, VTAGenericInsn *insns, VTAUop *uops, void *input, void *weight, void *bias, void *output);
+void vta_setup_register_all(const vta_hwinfo_t *const hwinfo, int ins_size, VTAGenericInsn *insns, VTAUop *uops, void *input, void *weight, void *bias, void *output);
+void vta_setup_register_bias(const vta_hwinfo_t *const hwinfo, void *bias);
 
 #endif

@@ -90,7 +90,7 @@ void vta_ctrl_write(const vta_hwinfo_t *const hwinfo, unsigned int value)
   mmio_write_data(XVTA_CONTROL_ADDR_AP_CTRL(hwinfo->ctrl_addr), value);
 }
 
-void vta_setup_register(const vta_hwinfo_t *const hwinfo, int ins_size, VTAGenericInsn *insns, VTAUop *uops,
+void vta_setup_register_all(const vta_hwinfo_t *const hwinfo, int ins_size, VTAGenericInsn *insns, VTAUop *uops,
                         void *input, void *weight, void *bias, void *output)
 {
   // Data signal of insn_count
@@ -107,4 +107,9 @@ void vta_setup_register(const vta_hwinfo_t *const hwinfo, int ins_size, VTAGener
   mmio_write_data(XVTA_CONTROL_ADDR_BIASES_DATA(hwinfo->ctrl_addr), (mmio_data_t)bias);
   // Data signal of outputs
   mmio_write_data(XVTA_CONTROL_ADDR_OUTPUTS_DATA(hwinfo->ctrl_addr), (mmio_data_t)output);
+}
+
+void vta_setup_register_bias(const vta_hwinfo_t *const hwinfo, void *bias)
+{
+  mmio_write_data(XVTA_CONTROL_ADDR_BIASES_DATA(hwinfo->ctrl_addr), (mmio_data_t)bias);
 }

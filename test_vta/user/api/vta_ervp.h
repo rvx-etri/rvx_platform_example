@@ -6,6 +6,7 @@
 #include "platform_info.h"
 
 #define VTA_DATA __attribute__ ((aligned(0x1000)))
+#define VTA_CTRL __attribute__ ((aligned(0x1000)))
 
 typedef struct
 {
