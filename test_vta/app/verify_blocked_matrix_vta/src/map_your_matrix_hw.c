@@ -16,45 +16,43 @@ const char matrix_hw_name[] = "BLOCKED_VTA";
 
 static vta_hwinfo_t i_vta0;
 
-void i_vta0_wait()
+static void i_vta0_wait()
 {
-  // vta_ctrl_wait(&i_vta0);
+  vta_ctrl_wait(&i_vta0);
 }
 
-ervp_mop_wait_fx_t i_vta0_matrix_mult_16x16le(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *ma_info, const ErvpMatrixInfo *mb_info, ErvpMatrixInfo *mc_info, int options)
+ervp_task_wait_fx_t i_vta0_matrix_mult_16x16le(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *ma_info, const ErvpMatrixInfo *mb_info, ErvpMatrixInfo *mc_info, int options)
 {
-  vta_matrix_mult_16x16le(mop_mapping, &i_vta0, ma_info, mb_info, mc_info, options);
-  return i_vta0_wait;
+  return vta_matrix_mult_16x16le(mop_mapping, &i_vta0, ma_info, mb_info, mc_info, options);
 }
 
-ervp_mop_wait_fx_t i_vta0_matrix_mult_16x16le_aligned(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *ma_info, const ErvpMatrixInfo *mb_info, ErvpMatrixInfo *mc_info, int options)
+ervp_task_wait_fx_t i_vta0_matrix_mult_16x16le_aligned(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *ma_info, const ErvpMatrixInfo *mb_info, ErvpMatrixInfo *mc_info, int options)
 {
-  _vta_matrix_mult_16x16le_aligned(mop_mapping, &i_vta0, ma_info, mb_info, mc_info, options);
-  return i_vta0_wait;
+  return _vta_matrix_mult_16x16le_aligned(mop_mapping, &i_vta0, ma_info, mb_info, mc_info, options);
 }
 
-#define BLOCK_SIZE 16
+static ervp_blocked_matrix_info_t *blocked_info_mac;
 
-static ervp_blocked_matrix_info_t *blocked_info_for_mult = NULL;
-
-static ervp_mop_wait_fx_t i_vta0_blocked_matrix_mult(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
+ervp_task_wait_fx_t i_blocked_matrix_mult(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *ma_info, const ErvpMatrixInfo *mb_info, ErvpMatrixInfo *mc_info, int options)
 {
-  return blocked_matrix_mult(blocked_info_for_mult, a, b, c, options);
+  // matrix_mult_size_print(ma_info, mb_info, mc_info);
+  return blocked_matrix_mult(blocked_info_mac, ma_info, mb_info, mc_info, options);
 }
 
 void map_your_matrix_function(ervp_mop_mapping_t *mop_mapping)
 {
-  i_vta0.block_size = BLOCK_SIZE;
+  i_vta0.block_size = 16;
   i_vta0.ctrl_addr = I_VTA00_CONFIG_BASEADDR;
+  i_vta0.wait_fx = i_vta0_wait;
   vta_matrix_setup_buffer(&i_vta0);
 
   /* map your own functions */
-  blocked_info_for_mult = blocked_matrix_info_alloc();
-  blocked_info_for_mult->block_size = i_vta0.block_size;
-  blocked_info_for_mult->subop_mapping = matrix_op_mapping_alloc();
-  blocked_info_for_mult->subop_mapping->matrix_mult = i_vta0_matrix_mult_16x16le;
+  blocked_info_mac = blocked_matrix_info_alloc();
+  blocked_info_mac->block_size = i_vta0.block_size;
+  blocked_info_mac->subop_mapping = matrix_op_mapping_alloc();
+  blocked_info_mac->subop_mapping->matrix_mult = i_vta0_matrix_mult_16x16le;
 
   //
-  mop_mapping->matrix_mult = i_vta0_blocked_matrix_mult;
+  mop_mapping->matrix_mult = i_blocked_matrix_mult;
   mop_mapping->matrix_conv = matrix_conv2mult_im2col;
 }

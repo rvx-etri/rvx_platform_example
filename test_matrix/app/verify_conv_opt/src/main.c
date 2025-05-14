@@ -32,7 +32,7 @@ int main()
 {
   if(EXCLUSIVE_ID==0)
   {
-    ervp_mop_wait_fx_t mop_wait_fx;
+    ervp_task_wait_fx_t task_wait_fx;
     ervp_mop_mapping_t* mop_mapping = matrix_op_mapping_alloc();
     map_your_matrix_function(mop_mapping);
 
@@ -52,8 +52,8 @@ int main()
       generate_test_matrix(input_info, i);
       generate_test_matrix(kernel_info, i);
       matrix_conv_sw(input_info, kernel_info, ref_info, conv_option.value);
-      mop_wait_fx = mop_mapping->matrix_conv(mop_mapping, input_info, kernel_info, output_info, conv_option.value);
-      matrix_wait_finish(mop_wait_fx);
+      task_wait_fx = mop_mapping->matrix_conv(mop_mapping, input_info, kernel_info, output_info, conv_option.value);
+      task_wait_finish(task_wait_fx);
       
       if(RESULT_CHECK)
       {

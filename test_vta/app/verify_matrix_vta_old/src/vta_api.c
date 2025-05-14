@@ -119,7 +119,7 @@ static void __attribute__ ((constructor)) construct_vta()
   setup_vta_var();
 }
 
-ervp_mop_wait_fx_t matrix_mult_vta_16x16(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
+ervp_task_wait_fx_t matrix_mult_vta_16x16(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
 {
   assert(a->num_row == 16);
   assert(a->num_col == 16);
@@ -173,7 +173,7 @@ ervp_mop_wait_fx_t matrix_mult_vta_16x16(ervp_mop_mapping_t *mop_mapping, const 
   return NULL;
 }
 
-ervp_mop_wait_fx_t matrix_mult_vta(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
+ervp_task_wait_fx_t matrix_mult_vta(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
 {
   assert(a->num_row<= 16);
   assert(a->num_col<= 16);

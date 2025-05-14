@@ -157,7 +157,7 @@ static void generate_vta_inst_for_matrix_mult(const ErvpMatrixInfo *a, const Erv
   printVTADebug(insn_buf, ins_size, uop_buf, uop_size);
 }
 
-static void _vta_matrix_mult_16x16le_using_buffer(ervp_mop_mapping_t *mop_mapping, const vta_hwinfo_t *const hwinfo, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
+static ervp_task_wait_fx_t _vta_matrix_mult_16x16le_using_buffer(ervp_mop_mapping_t *mop_mapping, const vta_hwinfo_t *const hwinfo, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
 {
   // printf_function();
   assert(a->addr != left_buffer);
@@ -166,7 +166,7 @@ static void _vta_matrix_mult_16x16le_using_buffer(ervp_mop_mapping_t *mop_mappin
 
   // matrix_mult_size_print(a,b,c);
 
-  ervp_mop_wait_fx_t mop_wait_fx = NULL;
+  ervp_task_wait_fx_t task_wait_fx = NULL;
 
   const int batch = a->num_row;
   const int in_channels = a->num_col;
@@ -177,39 +177,39 @@ static void _vta_matrix_mult_16x16le_using_buffer(ervp_mop_mapping_t *mop_mappin
   if (in_channels != 16)
   {
     // matrix_zero_sw(left_buffer_info);
-    mop_wait_fx = mop_mapping->matrix_zero(mop_mapping, left_buffer_info);
-    matrix_wait_finish(mop_wait_fx);
+    task_wait_fx = mop_mapping->matrix_zero(mop_mapping, left_buffer_info);
+    task_wait_finish(task_wait_fx);
   }
-  mop_wait_fx = mop_mapping->matrix_copy_part(mop_mapping, a, left_buffer_info, batch, in_channels, 0);
+  task_wait_fx = mop_mapping->matrix_copy_part(mop_mapping, a, left_buffer_info, batch, in_channels, 0);
 
   // right_buffer_info
   if ((in_channels != 16) || (out_channels != 16))
   {
     // matrix_zero_sw(right_buffer_info);
-    mop_wait_fx = mop_mapping->matrix_zero(mop_mapping, right_buffer_info);
-    matrix_wait_finish(mop_wait_fx);
+    task_wait_fx = mop_mapping->matrix_zero(mop_mapping, right_buffer_info);
+    task_wait_finish(task_wait_fx);
   }
-  mop_wait_fx = mop_mapping->matrix_transpose_part(mop_mapping, b, right_buffer_info, in_channels, out_channels, 0);
-
-  // output_buffer_info
-  output_buffer_info->num_row = batch;
+  task_wait_fx = mop_mapping->matrix_transpose_part(mop_mapping, b, right_buffer_info, in_channels, out_channels, 0);
 
   // vta start
   update_vta_inst_batch(insns, batch);
   vta_ctrl_write(hwinfo, 0x0);
-
-  matrix_wait_finish(mop_wait_fx);
+  task_wait_finish(task_wait_fx);
   vta_ctrl_write(hwinfo, 0x1);
-  vta_ctrl_wait(hwinfo);
+  task_wait_fx = hwinfo->wait_fx;
+
+  output_buffer_info->num_row = batch;
+  output_buffer_info->num_col = out_channels;
 
   // result
-  mop_wait_fx = mop_mapping->matrix_copy_part(mop_mapping, output_buffer_info, c, c->num_row, c->num_col, options);
-  matrix_wait_finish(mop_wait_fx);
+  task_wait_finish(task_wait_fx);
+  task_wait_fx = mop_mapping->matrix_perform_postprocess(mop_mapping, output_buffer_info, c, options);
+  return task_wait_fx;
 }
 
 static const int PRINT_HW = 0;
 
-void vta_matrix_mult_16x16le(ervp_mop_mapping_t *mop_mapping, const vta_hwinfo_t *const hwinfo, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
+ervp_task_wait_fx_t vta_matrix_mult_16x16le(ervp_mop_mapping_t *mop_mapping, const vta_hwinfo_t *const hwinfo, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
 {
   assert(a->num_col == b->num_row);
   assert(a->num_row == c->num_row);
@@ -217,6 +217,8 @@ void vta_matrix_mult_16x16le(ervp_mop_mapping_t *mop_mapping, const vta_hwinfo_t
   assert(a->num_row <= 16);
   assert(a->num_col <= 16);
   assert(b->num_col <= 16);
+
+  ervp_task_wait_fx_t task_wait_fx = NULL;
 
   // matrix_print(a);
 
@@ -227,7 +229,7 @@ void vta_matrix_mult_16x16le(ervp_mop_mapping_t *mop_mapping, const vta_hwinfo_t
   {
     if (PRINT_HW)
       printf("\nvta %d %d %d", a->num_row, a->num_col, b->num_col);
-    _vta_matrix_mult_16x16le_using_buffer(mop_mapping, hwinfo, a, b, c, options);
+    task_wait_fx = _vta_matrix_mult_16x16le_using_buffer(mop_mapping, hwinfo, a, b, c, options);
   }
   else
   {
@@ -235,6 +237,7 @@ void vta_matrix_mult_16x16le(ervp_mop_mapping_t *mop_mapping, const vta_hwinfo_t
       printf("\nsw %d %d %d", a->num_row, a->num_col, b->num_col);
     matrix_mult_sw(a, b, c, options);
   }
+  return task_wait_fx;
 }
 
 static void _vta_matrix_mult_16x16_aligned(ervp_mop_mapping_t *mop_mapping, const vta_hwinfo_t *const hwinfo, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
@@ -254,25 +257,25 @@ static void _vta_matrix_mult_16x16_aligned(ervp_mop_mapping_t *mop_mapping, cons
   assert(c->num_col == 16);
 
   const int ACC_OUTPUT = mop_option_is_acc(options);
-  ervp_mop_wait_fx_t mop_wait_fx = NULL;
+  ervp_task_wait_fx_t task_wait_fx = NULL;
 
   const int batch = a->num_row;
   const int in_channels = a->num_col;
   const int out_channels = c->num_col;
 
-  mop_wait_fx = mop_mapping->matrix_transpose_part(mop_mapping, b, right_buffer_info, in_channels, out_channels, 0);
+  task_wait_fx = mop_mapping->matrix_transpose_part(mop_mapping, b, right_buffer_info, in_channels, out_channels, 0);
 
   // vta start
   update_vta_inst_batch(insns, batch);
   update_vta_inst_stride(insns, matrix_get_stride(a), buffer_stride, matrix_get_stride(c), matrix_get_stride(c));
   vta_ctrl_write(hwinfo, 0x0);
 
-  matrix_wait_finish(mop_wait_fx);
+  task_wait_finish(task_wait_fx);
   vta_ctrl_write(hwinfo, 0x1);
   vta_ctrl_wait(hwinfo);
 }
 
-void _vta_matrix_mult_16x16le_aligned(ervp_mop_mapping_t *mop_mapping, const vta_hwinfo_t *const hwinfo, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
+ervp_task_wait_fx_t _vta_matrix_mult_16x16le_aligned(ervp_mop_mapping_t *mop_mapping, const vta_hwinfo_t *const hwinfo, const ErvpMatrixInfo *a, const ErvpMatrixInfo *b, ErvpMatrixInfo *c, int options)
 {
   // printf_function();
   // matrix_mult_size_print(a, b, c);
@@ -293,21 +296,9 @@ void _vta_matrix_mult_16x16le_aligned(ervp_mop_mapping_t *mop_mapping, const vta
   {
     if (PRINT_HW)
       printf("\nvta %d %d %d", a->num_row, a->num_col, b->num_col);
-    ervp_mop_wait_fx_t mop_wait_fx = NULL;
-    if (mop_option_has_postprocess(options))
-    {
-      temp_buffer_info->num_row = c->num_row;
-      temp_buffer_info->num_col = c->num_col;
-
-      _vta_matrix_mult_16x16_aligned(mop_mapping, hwinfo, a, b, temp_buffer_info, 0);
-
-      mop_wait_fx = mop_mapping->matrix_copy_part(mop_mapping, temp_buffer_info, c, c->num_row, c->num_col, options);
-      // matrix_wait_finish(mop_wait_fx);
-    }
-    else
-    {
-      _vta_matrix_mult_16x16_aligned(mop_mapping, hwinfo, a, b, c, options);
-    }
+    _vta_matrix_mult_16x16_aligned(mop_mapping, hwinfo, a, b, temp_buffer_info, 0);
+    ervp_task_wait_fx_t task_wait_fx = mop_mapping->matrix_perform_postprocess(mop_mapping, temp_buffer_info, c, options);
+    task_wait_finish(task_wait_fx);
   }
   else
   {
@@ -315,6 +306,7 @@ void _vta_matrix_mult_16x16le_aligned(ervp_mop_mapping_t *mop_mapping, const vta
       printf("\nsw %d %d %d", a->num_row, a->num_col, b->num_col);
     matrix_mult_sw(a, b, c, options);
   }
+  return NULL;
 }
 
 /*
@@ -377,23 +369,23 @@ void vta_matrix_conv_block_im2col(ervp_mop_mapping_t *mop_mapping, const ErvpMat
 {
   // matrix_conv_size_print(input_info, kernel_info, output_info);
 
-  ervp_mop_wait_fx_t mop_wait_fx = NULL;
+  ervp_task_wait_fx_t task_wait_fx = NULL;
 
   ervp_mconv_option_t conv_option;
   conv_option.value = conv_options;
   conv_option.br.performs_cliping = 0;
   conv_option.br.rshift = 0;
 
-  mop_wait_fx = matrix_conv2mult_im2col(mop_mapping, input_info, kernel_info, temp_buffer_info, conv_option.value);
+  task_wait_fx = matrix_conv2mult_im2col(mop_mapping, input_info, kernel_info, temp_buffer_info, conv_option.value);
 
   ervp_mop_option_t mop_option;
   mop_option.value = 0;
   mop_option.br.acc = conv_option.br.acc;
   mop_option.br.performs_cliping = conv_option.br.performs_cliping;
   mop_option.br.rshift = conv_option.br.rshift;
-  matrix_wait_finish(mop_wait_fx);
-  mop_wait_fx = mop_mapping->matrix_copy_part(mop_mapping, temp_buffer_info, output_info, output_info->num_row, output_info->num_col, mop_option.value);
+  task_wait_finish(task_wait_fx);
+  task_wait_fx = mop_mapping->matrix_copy_part(mop_mapping, temp_buffer_info, output_info, output_info->num_row, output_info->num_col, mop_option.value);
 
-  return mop_wait_fx;
+  return task_wait_fx;
 }
 #endif
