@@ -35,10 +35,14 @@ endif
 
 PLATFORM_DIR = $(call absolute_path,${CURDIR}/../..)
 
-USER_DIR = ${PLATFORM_DIR}/user
-API_DIR = ${USER_DIR}/api
-TARGET_DIR=${CURDIR}/target
-RESULT_DIR=${USER_DIR}/api
+GERENATRED_DIRNAME=generated
+GERENATRED_SSW_DIRNAME=ssw
+UTIL_DIR = ${PLATFORM_DIR}/util
+
+TARGET_DIR?=${CURDIR}/target
+RESULT_DIR?=${UTIL_DIR}/${GERENATRED_DIRNAME}/${GERENATRED_SSW_DIRNAME}
+RESULT_PARENT_DIR=$(call absolute_path,${RESULT_DIR}/..)
+RESULT_DIRNAME=$(notdir ${RESULT_DIR})
 
 clean:
 	@true
@@ -46,11 +50,15 @@ clean:
 convert:
 	${PYTHON3_CMD} ${RVX_ENV}/util/convert_file.py -i ${FILE_LIST} -o ${RESULT_DIR} -r ${ROM_NAME}
 
-user_clean:
-	cd ${API_DIR} && rm -rf *_file.*
+generated_clean:
+	@cd ${RESULT_DIR} && rm -rf *_file.*
 
-user_gen:
-	@cd ${PLATFORM_DIR} && make user
+generated_mkdir:
+	@cd ${UTIL_DIR} && mkdir -p ${GERENATRED_DIRNAME}
+
+generated_ssw_mkdir: generated_mkdir
+	@cd ${RESULT_PARENT_DIR} && mkdir -p ${RESULT_DIRNAME}
+	@cp -f ${RVX_ENV}/util/gitignore.generated.txt ${RESULT_DIR}/.gitignore
 
 add:
 	mkdir -p target
@@ -59,7 +67,7 @@ add:
 remove:
 	-cd ${TARGET_DIR} && rm -rf ${REMOVE_FILE_LIST}
 
-all: user_gen user_clean convert
+all: generated_ssw_mkdir generated_clean convert
 
 FORCE:
 

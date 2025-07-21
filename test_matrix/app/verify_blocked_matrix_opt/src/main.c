@@ -15,7 +15,7 @@
 
 ///////////////////////////////////////////////////////////////
 
-#define NUN_MATRIX 1
+#define NUM_MATRIX 1
 #define TEST_MATRIX_SIZE 17
 
 #define VERIFY_ADD 1
@@ -56,10 +56,10 @@ typedef uint8_t mo_type_t;
 
 #define ALIGNED_MATRIX __attribute__ ((aligned(0x1000)))
 
-ml_type_t input_left_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
-mr_type_t input_right_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
-mo_type_t output_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
-mo_type_t ref_array[NUN_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
+ml_type_t input_left_array[NUM_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
+mr_type_t input_right_array[NUM_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
+mo_type_t output_array[NUM_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
+mo_type_t ref_array[NUM_MATRIX][TEST_MATRIX_SIZE][TEST_MATRIX_SIZE] BIG_DATA_BSS ALIGNED_MATRIX;
 
 ErvpMatrixInfo* input_left_info = NULL;
 ErvpMatrixInfo* input_right_info = NULL;
@@ -91,7 +91,7 @@ int main()
     matrix_info_init();
 
     // init matrices
-    for(int i=0; i<NUN_MATRIX; i=i+1)
+    for(int i=0; i<NUM_MATRIX; i=i+1)
     {
       matrix_info_setup(i);
       generate_test_matrix(input_left_info, i);
@@ -103,7 +103,7 @@ int main()
     if(VERIFY_ADD)
     {
       printf_section(SKIP_SIM, "%s_ADD", matrix_hw_name);
-      for(int i=0; i<NUN_MATRIX; i=i+1)
+      for(int i=0; i<NUM_MATRIX; i=i+1)
       {
         flush_cache();
         matrix_info_setup(i);
@@ -126,7 +126,7 @@ int main()
     if(VERIFY_SUB)
     {
       printf_section(SKIP_SIM, "%s_SUB", matrix_hw_name);
-      for(int i=0; i<NUN_MATRIX; i=i+1)
+      for(int i=0; i<NUM_MATRIX; i=i+1)
       {
         flush_cache();
         matrix_info_setup(i);
@@ -149,7 +149,7 @@ int main()
     if(VERIFY_EWMULT)
     {
       printf_section(SKIP_SIM, "%s_EWMULT", matrix_hw_name);
-      for(int i=0; i<NUN_MATRIX; i=i+1)
+      for(int i=0; i<NUM_MATRIX; i=i+1)
       {
         flush_cache();
         matrix_info_setup(i);
@@ -172,7 +172,7 @@ int main()
     if(VERIFY_MULT)
     {
       printf_section(SKIP_SIM, "%s_MULT", matrix_hw_name);
-      for(int i=0; i<NUN_MATRIX; i=i+1)
+      for(int i=0; i<NUM_MATRIX; i=i+1)
       {
         flush_cache();
         matrix_info_setup(i);
@@ -195,7 +195,7 @@ int main()
     if(VERIFY_SCALAR_MULT)
     {
       printf_section(SKIP_SIM, "%s_SCALAR_MULT", matrix_hw_name);
-      for(int i=0; i<NUN_MATRIX; i=i+1)
+      for(int i=0; i<NUM_MATRIX; i=i+1)
       {
         flush_cache();
         matrix_info_setup(i);
