@@ -1,6 +1,6 @@
 ## ****************************************************************************
 ## ****************************************************************************
-## Copyright SoC Design Research Group, All rights reserved.    
+## Copyright SoC Design Research Group, All rights reserved.
 ## Electronics and Telecommunications Research Institute (ETRI)
 ##
 ## THESE DOCUMENTS CONTAIN CONFIDENTIAL INFORMATION AND KNOWLEDGE 
@@ -47,7 +47,9 @@ RESULT_DIRNAME=$(notdir ${RESULT_DIR})
 clean:
 	@true
 
-convert:
+convert: _convert update_api
+
+_convert:
 	${PYTHON3_CMD} ${RVX_ENV}/util/convert_file.py -i ${FILE_LIST} -o ${RESULT_DIR} -r ${ROM_NAME}
 
 generated_clean:
@@ -68,6 +70,20 @@ remove:
 	-cd ${TARGET_DIR} && rm -rf ${REMOVE_FILE_LIST}
 
 all: generated_ssw_mkdir generated_clean convert
+
+USER_DIR = ${PLATFORM_DIR}/user
+API_DIR = ${USER_DIR}/api
+
+FAKEFILE_API_LIST=$(wildcard ${API_DIR}/*_*_file.*)
+FAKEFILE_API_NAME_LIST=$(notdir ${FAKEFILE_API_LIST})
+
+update_api: $(addsuffix .update_api, ${FAKEFILE_API_NAME_LIST})
+
+$(addsuffix .update_api, ${FAKEFILE_API_NAME_LIST}):%.update_api:
+	@if [ -f ${RESULT_DIR}/$(*) ]; \
+	then \
+		mv -f ${RESULT_DIR}/$(*) ${API_DIR}; \
+	fi
 
 FORCE:
 

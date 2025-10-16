@@ -30,8 +30,9 @@ PLATFORM_NAME = $(notdir ${PLATFORM_DIR})
 
 APP_NAME = $(notdir ${CURDIR})
 
-TARGET_IMP_CLASS ?= vp
-BUILD_MODE ?= release
+TARGET_IMP_CLASS=vp
+BUILD_MODE=release
+BUILD_MODE_LIST=release debug
 
 ENGINE_WS=${PLATFORM_DIR}/..
 ENGINE_TARGET=app
@@ -46,7 +47,7 @@ FPGA_LIST = $(shell ${PYTHON3_CMD} ${RVX_UTIL_HOME}/os_util.py dir_list ${ENGINE
 IMP_LIST = vp rtl ${FPGA_LIST}
 
 ${IMP_LIST}:
-	@make --no-print-directory build TARGET_IMP_CLASS=$@ BUILD_MODE=$(BUILD_MODE)
+	@make build TARGET_IMP_CLASS=$@ BUILD_MODE=release
 
 test:
 	@make build TARGET_IMP_CLASS=vp BUILD_MODE=release
