@@ -86,7 +86,7 @@ int main()
 {
   if(EXCLUSIVE_ID==0)
   {
-    ervp_task_wait_fx_t task_wait_fx;
+    ervp_hwtask_busy_fx_t hwtask_busy_fx;
     ervp_mop_mapping_t* mop_mapping = matrix_op_mapping_alloc();
     map_your_matrix_function(mop_mapping);
     matrix_info_init();
@@ -109,8 +109,8 @@ int main()
         flush_cache();
         matrix_info_setup(i);
         matrix_add_sw(input_left_info, input_right_info, ref_info, 0);
-        task_wait_fx = mop_mapping->matrix_add(mop_mapping, input_left_info, input_right_info, output_info, 0);
-        task_wait_finish(task_wait_fx);
+        hwtask_busy_fx = mop_mapping->matrix_add(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        hwtask_wait_complete(hwtask_busy_fx);
         int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {
@@ -133,8 +133,8 @@ int main()
         flush_cache();
         matrix_info_setup(i);
         matrix_sub_sw(input_left_info, input_right_info, ref_info, 0);
-        task_wait_fx = mop_mapping->matrix_sub(mop_mapping, input_left_info, input_right_info, output_info, 0);
-        task_wait_finish(task_wait_fx);
+        hwtask_busy_fx = mop_mapping->matrix_sub(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        hwtask_wait_complete(hwtask_busy_fx);
         int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {
@@ -157,8 +157,8 @@ int main()
         flush_cache();
         matrix_info_setup(i);
         matrix_ewmult_sw(input_left_info, input_right_info, ref_info, 0);
-        task_wait_fx = mop_mapping->matrix_ewmult(mop_mapping, input_left_info, input_right_info, output_info, 0);
-        task_wait_finish(task_wait_fx);
+        hwtask_busy_fx = mop_mapping->matrix_ewmult(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        hwtask_wait_complete(hwtask_busy_fx);
         int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {
@@ -181,8 +181,8 @@ int main()
         flush_cache();
         matrix_info_setup(i);
         matrix_mult_sw(input_left_info, input_right_info, ref_info, 0);
-        task_wait_fx = mop_mapping->matrix_mult(mop_mapping, input_left_info, input_right_info, output_info, 0);
-        task_wait_finish(task_wait_fx);
+        hwtask_busy_fx = mop_mapping->matrix_mult(mop_mapping, input_left_info, input_right_info, output_info, 0);
+        hwtask_wait_complete(hwtask_busy_fx);
         int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {
@@ -205,8 +205,8 @@ int main()
         flush_cache();
         matrix_info_setup(i);
         matrix_scalar_mult_fixed_sw(input_left_info, 1, ref_info, 0);
-        task_wait_fx = mop_mapping->matrix_scalar_mult_fixed(mop_mapping, input_left_info, 1, output_info, 0);
-        task_wait_finish(task_wait_fx);
+        hwtask_busy_fx = mop_mapping->matrix_scalar_mult_fixed(mop_mapping, input_left_info, 1, output_info, 0);
+        hwtask_wait_complete(hwtask_busy_fx);
         int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
         {

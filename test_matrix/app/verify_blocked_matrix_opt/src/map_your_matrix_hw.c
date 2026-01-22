@@ -10,27 +10,27 @@ const int BLOCK_SIZE = 4;
 
 static ervp_blocked_matrix_info_t* blocked_info;
 
-ervp_task_wait_fx_t i_blocked_matrix_add(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *ma_info, const ErvpMatrixInfo *mb_info, ErvpMatrixInfo *mc_info, int options)
+ervp_hwtask_busy_fx_t i_blocked_matrix_add(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *ma_info, const ErvpMatrixInfo *mb_info, ErvpMatrixInfo *mc_info, int options)
 {
   return blocked_matrix_add(blocked_info, ma_info, mb_info, mc_info, options);
 }
 
-ervp_task_wait_fx_t i_blocked_matrix_sub(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *ma_info, const ErvpMatrixInfo *mb_info, ErvpMatrixInfo *mc_info, int options)
+ervp_hwtask_busy_fx_t i_blocked_matrix_sub(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *ma_info, const ErvpMatrixInfo *mb_info, ErvpMatrixInfo *mc_info, int options)
 {
   return blocked_matrix_sub(blocked_info, ma_info, mb_info, mc_info, options);
 }
 
-ervp_task_wait_fx_t i_blocked_matrix_ewmult(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *ma_info, const ErvpMatrixInfo *mb_info, ErvpMatrixInfo *mc_info, int options)
+ervp_hwtask_busy_fx_t i_blocked_matrix_ewmult(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *ma_info, const ErvpMatrixInfo *mb_info, ErvpMatrixInfo *mc_info, int options)
 {
   return blocked_matrix_ewmult(blocked_info, ma_info, mb_info, mc_info, options);
 }
 
-ervp_task_wait_fx_t i_blocked_matrix_mult(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *ma_info, const ErvpMatrixInfo *mb_info, ErvpMatrixInfo *mc_info, int options)
+ervp_hwtask_busy_fx_t i_blocked_matrix_mult(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *ma_info, const ErvpMatrixInfo *mb_info, ErvpMatrixInfo *mc_info, int options)
 {
   return blocked_matrix_mult(blocked_info, ma_info, mb_info, mc_info, options);
 }
 
-ervp_task_wait_fx_t i_blocked_matrix_conv(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *ma_info, const ErvpMatrixInfo *mb_info, ErvpMatrixInfo *mc_info, int conv_options)
+ervp_hwtask_busy_fx_t i_blocked_matrix_conv(ervp_mop_mapping_t *mop_mapping, const ErvpMatrixInfo *ma_info, const ErvpMatrixInfo *mb_info, ErvpMatrixInfo *mc_info, int conv_options)
 {
   return blocked_matrix_conv(blocked_info, ma_info, mb_info, mc_info, conv_options);
 }
