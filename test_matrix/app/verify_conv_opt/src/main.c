@@ -51,6 +51,31 @@ int main()
       // generate input
       generate_test_matrix(input_info, i);
       generate_test_matrix(kernel_info, i);
+      
+      // with init
+      conv_option.br.acc = 0;
+      conv_option.br.rshift = 0;
+      matrix_conv_sw(input_info, kernel_info, ref_info, conv_option.value);
+      hwtask_busy_fx = mop_mapping->matrix_conv(mop_mapping, input_info, kernel_info, output_info, conv_option.value);
+      hwtask_wait_complete(hwtask_busy_fx);
+      
+      if(RESULT_CHECK)
+      {
+        int all_are_equal = matrix_compare(output_info, ref_info, 1);
+        if(!all_are_equal)
+        {
+          matrix_print(input_info);
+          matrix_print(kernel_info);
+          matrix_print(output_info);
+          matrix_print(ref_info);
+          assert(0);
+          break;
+        }
+      }
+
+      // with acc
+      conv_option.br.acc = 1;
+      conv_option.br.rshift = 0;
       matrix_conv_sw(input_info, kernel_info, ref_info, conv_option.value);
       hwtask_busy_fx = mop_mapping->matrix_conv(mop_mapping, input_info, kernel_info, output_info, conv_option.value);
       hwtask_wait_complete(hwtask_busy_fx);

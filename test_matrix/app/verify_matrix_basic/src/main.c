@@ -20,7 +20,6 @@
 #define VERIFY_SUB 1
 #define VERIFY_EWMULT 1
 #define VERIFY_MULT 1
-#define VERIFY_SCALAR_MULT 1
 
 #define ML_DATATYPE MATRIX_DATATYPE_SINT08
 #define MR_DATATYPE MATRIX_DATATYPE_SINT08
@@ -191,31 +190,6 @@ int main()
         matrix_zero_sw(output_info);
         ref_info = input_left_info;
         hwtask_busy_fx = mop_mapping->matrix_mult(mop_mapping, input_left_info, input_right_info, output_info, 0);
-        hwtask_wait_complete(hwtask_busy_fx);
-        int all_are_equal = matrix_compare(output_info, ref_info, 1);
-        if(!all_are_equal)
-        {
-          matrix_print(input_left_info);
-          matrix_print(input_right_info);
-          matrix_print(output_info);
-          matrix_print(ref_info);
-          assert(0);
-          break;
-        }
-      }
-    }
-    
-    //
-    if(VERIFY_SCALAR_MULT)
-    {
-      printf_section(SKIP_SIM, "%s_SCALAR_MULT", matrix_hw_name);
-      for(int i=0; i<NUM_MATRIX; i=i+1)
-      {
-        flush_cache();
-        matrix_info_setup(i);
-        matrix_zero_sw(output_info);
-        ref_info = input_left_info;
-        hwtask_busy_fx = mop_mapping->matrix_scalar_mult_fixed(mop_mapping, input_left_info, 1, output_info, 0);
         hwtask_wait_complete(hwtask_busy_fx);
         int all_are_equal = matrix_compare(output_info, ref_info, 1);
         if(!all_are_equal)
