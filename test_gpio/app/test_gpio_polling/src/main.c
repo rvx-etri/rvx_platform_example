@@ -1,6 +1,8 @@
 #include "ervp_printf.h"
 #include "ervp_delay.h"
 #include "ervp_user_gpio.h"
+#include "ervp_external_peri_group_api.h"
+#include "ervp_platform_controller_api.h"
 
 int main() {
 	int value;

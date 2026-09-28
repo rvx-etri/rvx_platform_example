@@ -47,10 +47,7 @@ generated: FORCE
 clean: $(addsuffix .clean, ${UTIL_LIST})
 
 $(addsuffix .clean, ${UTIL_LIST}):%.clean:
-	@if [ -d $(*) ]; \
-	then \
-		cd $(*) && make --no-print-directory clean; \
-	fi
+	-@cd $(*) && make --no-print-directory clean
 
 -include ./user_util.mh
 
